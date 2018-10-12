@@ -2,30 +2,30 @@
 # obtained from the sequence of natural numbers by replacing composed numbers with their prime divisors,
 # each divisor d being written d times, without memorizing the elements of the sequence.
 
-n = int(input("Give n: "))
-t = i = 1
-d = 1
-out = -1
+index = int(input("Give n: "))
+number_remainder = current_number = 1
+divisor = 1
+result = -1
 
-while n > 0:
-    d += 1
-    divisor = False
-    while t % d == 0:
-        t //= d
-        divisor = True
+while index > 0:
+    divisor += 1
+    is_divisor = False
+    while number_remainder % divisor == 0:
+        number_remainder //= divisor
+        is_divisor = True
 
-    if divisor and i != 2:
-        n -= d
-        out = d
-        if t == 1:
-            i += 1
-            t = i
-            d = 1
-    elif d >= i // 2:
-        n -= 1
-        out = i
-        i += 1
-        t = i
-        d = 1
+    if is_divisor and current_number != 2:
+        index -= divisor
+        result = divisor
+        if number_remainder == 1:
+            current_number += 1
+            number_remainder = current_number
+            divisor = 1
+    elif divisor >= current_number // 2:
+        index -= 1
+        result = current_number
+        current_number += 1
+        number_remainder = current_number
+        divisor = 1
 
-print(out)
+print(result)

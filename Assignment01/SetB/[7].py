@@ -2,7 +2,7 @@
 #  number inside that year.
 
 
-def month_days(n):
+def month_days(month_number):
     months = {
         1: ('January', 31),
         2: ('February', 28),
@@ -17,18 +17,18 @@ def month_days(n):
         11: ('November', 30),
         12: ('December', 31)
     }
-    if n == 2 and leapYear:
+    if month_number == 2 and leapYear:
         return 29
-    return months.get(n)[1]
+    return months.get(month_number)[1]
 
 
 year = int(input("Year: "))
 days = int(input("Number of the day: "))
 leapYear = (year % 4 == 0)
-m = 1
+month = 1
 
-while days - month_days(m) > 0:
-    days -= month_days(m)
-    m += 1
+while days - month_days(month) > 0:
+    days -= month_days(month)
+    month += 1
 
-print('The date is ' + str(days) + '.' + str(m) + '.' + str(year))
+print('The date is ' + str(days) + '.' + str(month) + '.' + str(year))

@@ -1,4 +1,5 @@
 # Generate the first prime number larger than a given natural number n
+
 n = int(input("Give n: "))
 n = n + 1
 prime = False
