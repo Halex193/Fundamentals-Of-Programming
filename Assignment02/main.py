@@ -256,12 +256,12 @@ def ui_display_sequence_11(number_dictionary):
 # region Test Part
 def run_tests():
     test_number_dictionary_add()
-    # test_find_sequence_10()
-    # test_find_sequence_11()
+    test_find_sequence_10()
+    test_find_sequence_11()
 
 
 def test_number_dictionary_add():
-    number_dictionary = []
+    number_dictionary = {}
     number_dictionary_add(number_dictionary, (0, 1))
     assert number_dictionary == {0: (0, 1)}
 
@@ -273,58 +273,64 @@ def test_number_dictionary_add():
 
 
 def test_find_sequence_10():
-    number_dictionary = []
+    number_dictionary = {}
     assert find_sequence_10(number_dictionary) == {}
-    assert number_dictionary == []
+    assert number_dictionary == {}
 
-    number_dictionary = [(10, 10)]
-    assert find_sequence_10(number_dictionary) == [(10, 10)]
-    assert number_dictionary == [(10, 10)]
+    number_dictionary = {0: (10, 10)}
+    assert find_sequence_10(number_dictionary) == {0: (10, 10)}
+    assert number_dictionary == {0: (10, 10)}
 
-    number_dictionary = [(4, 6), (6, 4)]
-    assert find_sequence_10(number_dictionary) == [(4, 6), (6, 4)]
-    assert number_dictionary == [(4, 6), (6, 4)]
+    number_dictionary = {0: (4, 6), 1: (6, 4)}
+    assert find_sequence_10(number_dictionary) == {0: (4, 6), 1: (6, 4)}
+    assert number_dictionary == {0: (4, 6), 1: (6, 4)}
 
-    number_dictionary = [(4, 6), (6, 4), (0, 7), (10, 2), (0, 1)]
-    assert find_sequence_10(number_dictionary) == [(0, 7), (10, 2), (0, 1)]
-    assert number_dictionary == [(4, 6), (6, 4), (0, 7), (10, 2), (0, 1)]
+    number_dictionary = {0: (4, 6), 1: (6, 4), 2: (0, 7), 3: (10, 2), 4: (0, 1)}
+    assert find_sequence_10(number_dictionary) == {0: (0, 7), 1: (10, 2), 2: (0, 1)}
+    assert number_dictionary == {0: (4, 6), 1: (6, 4), 2: (0, 7), 3: (10, 2), 4: (0, 1)}
 
 
 def test_find_sequence_11():
-    number_dictionary = []
-    assert find_sequence_11(number_dictionary) == []
-    assert number_dictionary == []
+    number_dictionary = {}
+    assert find_sequence_11(number_dictionary) == {}
+    assert number_dictionary == {}
 
-    number_dictionary = {0:(10, 10)}
-    assert find_sequence_11(number_dictionary) == []
-    assert number_dictionary == {0:(10, 10)}
+    number_dictionary = {0: (10, 10)}
+    assert find_sequence_11(number_dictionary) == {}
+    assert number_dictionary == {0: (10, 10)}
 
-    number_dictionary = {0:(3, 6), 1: (6, 6)}
-    assert find_sequence_11(number_dictionary) == []
-    assert number_dictionary == {0:(3, 6), 1: (6, 6)}
+    number_dictionary = {0: (3, 6), 1: (6, 6)}
+    assert find_sequence_11(number_dictionary) == {}
+    assert number_dictionary == {0: (3, 6), 1: (6, 6)}
 
-    number_dictionary = {0:(4, 6), 1: (6, 4), 2: (0, 7), 3: (10, 2)}
-    assert find_sequence_11(number_dictionary) == {0:(4, 6), 1: (6, 4), 2: (0, 7)}
-    assert number_dictionary == {0:(4, 6), 1: (6, 4), 2: (0, 7), 3: (10, 2)}
+    number_dictionary = {0: (4, 6), 1: (6, 4), 2: (0, 7), 3: (10, 2)}
+    assert find_sequence_11(number_dictionary) == {0: (4, 6), 1: (6, 4), 2: (0, 7)}
+    assert number_dictionary == {0: (4, 6), 1: (6, 4), 2: (0, 7), 3: (10, 2)}
 
-    number_dictionary = {0:(4, 6), 1: (6, 4), 2:(0, 7), 3:(10, 2), 4:(5, 8)}
-    assert find_sequence_11(number_dictionary) == {0:(4, 6), 1: (6, 4), 2:(0, 7)}
-    assert number_dictionary == {0:(4, 6), 1: (6, 4), 2:(0, 7), 3:(10, 2), 4:(5, 8)}
+    number_dictionary = {0: (4, 6), 1: (6, 4), 2: (0, 7), 3: (10, 2), 4: (5, 8)}
+    assert find_sequence_11(number_dictionary) == {0: (4, 6), 1: (6, 4), 2: (0, 7)}
+    assert number_dictionary == {0: (4, 6), 1: (6, 4), 2: (0, 7), 3: (10, 2), 4: (5, 8)}
 
-    number_dictionary = {0:(4, 6), 1: (6, 4), 2: (0, 7), 3: (10, 2), 4: (11, 8), 5: (12, 54), 6: (13, 87.987)}
-    assert find_sequence_11(number_dictionary) == {0:(4, 6), 1: (6, 4), 2: (0, 7)}
-    assert number_dictionary == {0:(4, 6), 1: (6, 4), 2: (0, 7), 3: (10, 2), 4: (11, 8), 5: (12, 54), 6: (13, 87.987)}
+    number_dictionary = {0: (4, 6), 1: (6, 4), 2: (0, 7), 3: (10, 2), 4: (11, 8), 5: (12, 54), 6: (13, 87.987)}
+    assert find_sequence_11(number_dictionary) == {0: (4, 6), 1: (6, 4), 2: (0, 7)}
+    assert number_dictionary == {0: (4, 6), 1: (6, 4), 2: (0, 7), 3: (10, 2), 4: (11, 8), 5: (12, 54), 6: (13, 87.987)}
 
-    number_dictionary = {0:(4, 6), 1: (6, 4), 2: (0, 7), 3: (10, 2), 4: (11, 8), 5: (12, 54), 6: (13, 87.987), 7: (2.5, 87)}
-    assert find_sequence_11(number_dictionary) == {0: (0, 7), 1: (10, 2), 2: (11, 8), 3: (12, 54), 4: (13, 87.987), 5: (2.5, 87)}
-    assert number_dictionary == {0:(4, 6), 1: (6, 4), 2: (0, 7), 3: (10, 2), 4: (11, 8), 5: (12, 54), 6: (13, 87.987), 7: (2.5, 87)}
+    number_dictionary = {0: (4, 6), 1: (6, 4), 2: (0, 7), 3: (10, 2), 4: (11, 8), 5: (12, 54), 6: (13, 87.987),
+                         7: (2.5, 87)}
+    assert find_sequence_11(number_dictionary) == {0: (0, 7), 1: (10, 2), 2: (11, 8), 3: (12, 54), 4: (13, 87.987),
+                                                   5: (2.5, 87)}
+    assert number_dictionary == {0: (4, 6), 1: (6, 4), 2: (0, 7), 3: (10, 2), 4: (11, 8), 5: (12, 54), 6: (13, 87.987),
+                                 7: (2.5, 87)}
 
-    number_dictionary = {0:(4, 6), 1: (6, 4), 2: (0, 7), 3: (10, 2), 4: (11, 8), 5: (12, 54), 6: (13, 87.987), 7: (2.5, 87), 8: (3.8, 9)}
-    assert find_sequence_11(number_dictionary) == {1: (0, 7), 2: (10, 2), 3: (11, 8), 4: (12, 54), 5: (13, 87.987), 6: (2.5, 87), 7: (3.8, 9)}
-    assert number_dictionary == {0:(4, 6), 1: (6, 4), 2: (0, 7), 3: (10, 2), 4: (11, 8), 5: (12, 54), 6: (13, 87.987), 7: (2.5, 87), 8: (3.8, 9)}
+    number_dictionary = {0: (4, 6), 1: (6, 4), 2: (0, 7), 3: (10, 2), 4: (11, 8), 5: (12, 54), 6: (13, 87.987),
+                         7: (2.5, 87), 8: (3.8, 9)}
+    assert find_sequence_11(number_dictionary) == {0: (0, 7), 1: (10, 2), 2: (11, 8), 3: (12, 54), 4: (13, 87.987),
+                                                   5: (2.5, 87)}
+    assert number_dictionary == {0: (4, 6), 1: (6, 4), 2: (0, 7), 3: (10, 2), 4: (11, 8), 5: (12, 54), 6: (13, 87.987),
+                                 7: (2.5, 87), 8: (3.8, 9)}
 
 
 # endregion
 
-# run_tests()
+run_tests()
 run()
