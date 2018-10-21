@@ -33,7 +33,8 @@ def execute_command(apartment_expense_data, command, changes_stack):
                 'sort': ui_sort,
                 'filter': ui_filter,
                 'undo': ui_undo,
-                'help': ui_help
+                'help': ui_help,
+                'credits': ui_credits
                 }
     command_name = get_command_name(command)
 
@@ -139,7 +140,8 @@ def command_replace(apartment_expense_data, args):
     if not valid_amount(args[3]):
         raise ValueError('amount')
     amount = int(args[3])
-    if apartment in get_apartments(apartment_expense_data) and type in get_types_for_apartment(apartment_expense_data, apartment):
+    if apartment in get_apartments(apartment_expense_data) and \
+            type in get_types_for_apartment(apartment_expense_data, apartment):
         set_apartment_expense(apartment_expense_data, apartment, type, amount)
         return True
     return False
@@ -172,9 +174,10 @@ def command_list(apartment_expense_data, args):
         if not valid_relation(args[0]):
             raise ValueError('relation')
         relation = args[0]
-        if not valid_amount(args[1]):
-            raise ValueError('amount')
-        amount = int(args[1])
+        try:
+            amount = int(args[1])
+        except ValueError:
+            raise ValueError("int")
         return list_expenses_for_amount(apartment_expense_data, relation, amount)
 
 
@@ -206,16 +209,16 @@ def list_expenses_for_apartment(apartment_expense_data, apartment):
 def list_expenses_for_amount(apartment_expense_data, relation, amount):
     apartments = []
     for apartment in get_apartments(apartment_expense_data):
-        sum = 0
+        amount_sum = 0
         for type in get_types_for_apartment(apartment_expense_data, apartment):
-            sum += get_apartment_expense(apartment_expense_data, apartment, type)
-        if relation == "<" and sum < amount:
+            amount_sum += get_apartment_expense(apartment_expense_data, apartment, type)
+        if relation == "<" and amount_sum < amount:
             apartments.append(str(apartment))
             apartments.append(", ")
-        elif relation == "=" and sum == amount:
+        elif relation == "=" and amount_sum == amount:
             apartments.append(str(apartment))
             apartments.append(", ")
-        elif relation == ">" and sum > amount:
+        elif relation == ">" and amount_sum > amount:
             apartments.append(str(apartment))
             apartments.append(", ")
     return ''.join(apartments[:-1])
@@ -241,8 +244,120 @@ def ui_undo(apartment_expense_data, args):
     pass
 
 
-def ui_help(apartment_expense_data, command_args):
-    pass
+def ui_help(apartment_expense_data, args):
+    commands = {
+        'add': '''
+add <apartment> <type> <amount>
+
+e.g. 
+add 25 gas 100 – add to apartment 25 an expense for gas in amount of 100 RON.
+''',
+
+        'remove': '''
+remove <apartment>
+remove <start apartment> to <end apartment>
+remove <type>
+
+e.g.  
+remove 15 – remove all the expenses of apartment 15.
+remove 5 to 10 – remove all the expenses from apartments between 5 and 10.
+remove gas – remove all the expenses for gas from all apartments.
+''',
+
+        'replace': '''
+replace <apartment> <type> with <amount>
+
+e.g.
+replace 12 gas with 200 – replace the amount of the expense with type gas for apartment 12 with 200 RON.
+''',
+        'list': '''
+list
+list <apartment>
+list [ < | = | > ] <amount>
+
+e.g. 
+list – write the entire list of expenses.
+list 15 – write all expenses for apartment 15.
+list > 100 - write all the apartments having total expenses > 100 RON.
+list = 17 - write all the apartments having total expenses = 17 RON.
+''',
+        'sum': '''
+sum <type>
+
+e.g. 
+sum gas – write the total amount for the expenses having type “gas”. 
+''',
+        'max': '''
+max <apartment> 
+        
+e.g. 
+max 25 – write the maximum amount per each expense type for apartment 25. 
+''',
+        'sort': '''
+sort apartment
+sort type 
+        
+e.g. 
+sort apartment – write the list of apartments sorted ascending by total amount of expenses. 
+sort type – write the total amount of expenses for each type, sorted ascending by amount of money. 
+        ''',
+        'filter': '''
+filter <type>
+filter <value>      
+        
+e.g.
+filter gas – keep only expenses for “gas”. 
+filter 300 – keep only expenses having an amount of money smaller than 300 RON. 
+''',
+        'undo': '''
+undo
+
+undo – the last operation that has modified program data will be reversed. 
+You can undo all operations performed since program start by repeatedly calling this function. 
+        
+''',
+        'help': "Choose another command",
+        'credits': "Shows the credits of the program"
+    }
+    if len(args) == 0:
+        print("Valid commands:")
+        for command in commands.keys():
+            print(command)
+        print("Type 'help <command>' to get the command's possible arguments")
+    elif len(args) == 1:
+        command = args[0]
+        if command in commands.keys():
+            print(commands[command])
+        else:
+            print("Unknown command")
+    else:
+        print("Unknown arguments")
+
+
+def ui_credits(apartment_expense_data, command_args):
+    print('''
+    Udrea Horațiu 917 2018
+                                          
+        &@@@@@@@@@            @              
+          @@@@@@  @         @@@              
+            @@  @@@       @@@@@              
+              %@@@@     @@@@@@@              
+             @@@@@@      ,@@@@@              
+             @@@@@@      ,@@@@@              
+             @@@@@@      ,@@@@@              
+             @@@@@@      ,@@@@@              
+             @@@@@@@@@@@@@@@@@@              
+          ,@@@@@@@@@@@@@@@@@@@@              
+         @@@@@@@@@@@@@@@@@@@@@@              
+             @@@@@@       @@@@@              
+             @@@@@@       @@@@@              
+             @@@@@@       @@@@@              
+             @@@@@@       @@@@@              
+             @@@@@@       @@@@@              
+             @@@@@@       @@@@@              
+             @@@@@@       @@@@@@@            
+           @@@@@@@@       @@@@@@
+    ''')
 
 
 def ui_handle_value_error(ve):
@@ -250,7 +365,9 @@ def ui_handle_value_error(ve):
         'apartment': "The apartment number must be a positive integer value",
         'amount': "The amount must be a positive integer value",
         'type': "The type must be one of these values: " + str(get_type_list()),
-        'args': "Invalid arguments"
+        'args': "Invalid arguments",
+        'relation': "Provide a valid relation [ < | = | > ]",
+        'int': "Provide a valid integer"
     }
     if str(ve) in error_messages.keys():
         print(error_messages[str(ve)])
@@ -328,7 +445,7 @@ def remove_apartment_expenses_from_apartment_range(apartment_expense_data, apart
 
 def remove_apartment_expenses_from_type(apartment_expense_data, type):
     removed = 0
-    for expense_set in apartment_expense_data:
+    for expense_set in apartment_expense_data.values():
         if type in expense_set.keys():
             del expense_set[type]
             removed += 1
