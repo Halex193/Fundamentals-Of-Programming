@@ -1,4 +1,14 @@
+# Assignment 03-04
+# Udrea Horațiu 917
+
 from data import *
+
+
+def initialize_data():
+    apartment_expense_data = create_apartment_expense_data()
+    populate_apartment_expense_data(apartment_expense_data)
+    changes_stack = create_changes_stack()
+    return (apartment_expense_data, changes_stack)
 
 
 def command_add(apartment_expense_data, arguments):
@@ -35,7 +45,7 @@ def command_remove(apartment_expense_data, arguments):
             apartment_start = int(arguments[0])
             apartment_end = int(arguments[2])
             if apartment_start >= apartment_end:
-                raise ValueError('incr')
+                raise ValueError('increasing')
             return remove_apartment_expenses_from_apartment_range(apartment_expense_data, apartment_start,
                                                                   apartment_end)
         else:
