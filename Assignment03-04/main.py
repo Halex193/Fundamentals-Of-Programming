@@ -19,7 +19,7 @@ def get_command_name(command):
     return command.split(' ')[0]
 
 
-def get_command_args(command):
+def get_command_arguments(command):
     return command.split(' ')[1:]
 
 
@@ -39,8 +39,8 @@ def execute_command(apartment_expense_data, command, changes_stack):
     command_name = get_command_name(command)
 
     if command_name in commands.keys():
-        command_args = get_command_args(command)
-        commands[command_name](apartment_expense_data, command_args)
+        command_arguments = get_command_arguments(command)
+        commands[command_name](apartment_expense_data, command_arguments)
     else:
         print("Command not recognized")
 
@@ -59,103 +59,103 @@ def pop_command_stack(command_stack):
     return command_stack.pop()
 
 
-def ui_add(apartment_expense_data, args):
+def ui_add(apartment_expense_data, arguments):
     try:
-        added = command_add(apartment_expense_data, args)
+        added = command_add(apartment_expense_data, arguments)
         if added:
             print("Expense added")
         else:
             print("Expense already exists. Use 'replace' command instead")
         return True
-    except ValueError as ve:
-        ui_handle_value_error(ve)
+    except ValueError as value_error:
+        ui_handle_value_error(value_error)
         return False
 
 
-def command_add(apartment_expense_data, args):
-    if len(args) != 3:
-        raise ValueError('args')
+def command_add(apartment_expense_data, arguments):
+    if len(arguments) != 3:
+        raise ValueError('arguments')
 
-    if not valid_apartment(args[0]):
+    if not valid_apartment(arguments[0]):
         raise ValueError('apartment')
-    apartment = int(args[0])
+    apartment = int(arguments[0])
 
-    if not valid_type(args[1]):
+    if not valid_type(arguments[1]):
         raise ValueError('type')
-    type = args[1]
+    type = arguments[1]
 
-    if not valid_amount(args[2]):
+    if not valid_amount(arguments[2]):
         raise ValueError('amount')
-    amount = int(args[2])
+    amount = int(arguments[2])
 
     return add_apartment_expense(apartment_expense_data, apartment, type, amount)
 
 
-def ui_remove(apartment_expense_data, args):
+def ui_remove(apartment_expense_data, arguments):
     try:
-        number = command_remove(apartment_expense_data, args)
+        number = command_remove(apartment_expense_data, arguments)
         print(str(number) + " expense" + ("s" if number != 1 else "") + " removed")
         return True
-    except ValueError as ve:
-        ui_handle_value_error(ve)
+    except ValueError as value_error:
+        ui_handle_value_error(value_error)
         return False
 
 
-def command_remove(apartment_expense_data, args):
-    if len(args) not in range(1, 4 + 1):
-        raise ValueError('args')
-    if valid_integer(args[0]):
-        if not valid_apartment(args[0]):
+def command_remove(apartment_expense_data, arguments):
+    if len(arguments) not in range(1, 4 + 1):
+        raise ValueError('arguments')
+    if valid_integer(arguments[0]):
+        if not valid_apartment(arguments[0]):
             raise ValueError('apartment')
-        if len(args) == 1:
-            return remove_apartment_expenses_from_apartment_number(apartment_expense_data, int(args[0]))
-        elif len(args) == 3 and args[1] == "to":
-            if not valid_apartment(args[2]):
+        if len(arguments) == 1:
+            return remove_apartment_expenses_from_apartment_number(apartment_expense_data, int(arguments[0]))
+        elif len(arguments) == 3 and arguments[1] == "to":
+            if not valid_apartment(arguments[2]):
                 raise ValueError('apartment')
 
-            apartment_start = int(args[0])
-            apartment_end = int(args[2])
+            apartment_start = int(arguments[0])
+            apartment_end = int(arguments[2])
             if apartment_start >= apartment_end:
                 raise ValueError('incr')
             return remove_apartment_expenses_from_apartment_range(apartment_expense_data, apartment_start,
                                                                   apartment_end)
         else:
-            raise ValueError("args")
-    elif len(args) == 1:
-        if not valid_type(args[0]):
+            raise ValueError("arguments")
+    elif len(arguments) == 1:
+        if not valid_type(arguments[0]):
             raise ValueError('type')
-        return remove_apartment_expenses_from_type(apartment_expense_data, args[0])
+        return remove_apartment_expenses_from_type(apartment_expense_data, arguments[0])
     else:
-        raise ValueError('args')
+        raise ValueError('arguments')
 
 
-def ui_replace(apartment_expense_data, args):
+def ui_replace(apartment_expense_data, arguments):
     try:
-        replaced = command_replace(apartment_expense_data, args)
+        replaced = command_replace(apartment_expense_data, arguments)
         if replaced:
             print("Amount replaced")
         else:
             print("Expense does not exist. Use 'add' command instead")
         return True
-    except ValueError as ve:
-        ui_handle_value_error(ve)
+    except ValueError as value_error:
+        ui_handle_value_error(value_error)
         return False
 
 
-def command_replace(apartment_expense_data, args):
-    if len(args) != 4:
-        raise ValueError('args')
-    if not valid_apartment(args[0]):
+def command_replace(apartment_expense_data, arguments):
+    if len(arguments) != 4:
+        raise ValueError('arguments')
+    if not valid_apartment(arguments[0]):
         raise ValueError('apartment')
-    apartment = int(args[0])
-    if not valid_type(args[1]):
+    apartment = int(arguments[0])
+    if not valid_type(arguments[1]):
         raise ValueError('type')
-    type = args[1]
-    if args[2] != "with":
-        raise ValueError('args')
-    if not valid_amount(args[3]):
+    type = arguments[1]
+    if arguments[2] != "with":
+        raise ValueError('arguments')
+    if not valid_amount(arguments[3]):
         raise ValueError('amount')
-    amount = int(args[3])
+    amount = int(arguments[3])
     if apartment in get_apartments(apartment_expense_data) and \
             type in get_types_for_apartment(apartment_expense_data, apartment):
         set_apartment_expense(apartment_expense_data, apartment, type, amount)
@@ -163,35 +163,35 @@ def command_replace(apartment_expense_data, args):
     return False
 
 
-def ui_list(apartment_expense_data, args):
+def ui_list(apartment_expense_data, arguments):
     try:
-        output = command_list(apartment_expense_data, args)
+        output = command_list(apartment_expense_data, arguments)
         if output == '':
             print("Nothing to show")
         else:
             print(output)
         return True
-    except ValueError as ve:
-        ui_handle_value_error(ve)
+    except ValueError as value_error:
+        ui_handle_value_error(value_error)
         return False
 
 
-def command_list(apartment_expense_data, args):
-    if len(args) > 2:
-        raise ValueError('args')
-    if len(args) == 0:
+def command_list(apartment_expense_data, arguments):
+    if len(arguments) > 2:
+        raise ValueError('arguments')
+    if len(arguments) == 0:
         return generate_list(list_all_expenses(apartment_expense_data))
-    elif len(args) == 1:
-        if not valid_apartment(args[0]):
+    elif len(arguments) == 1:
+        if not valid_apartment(arguments[0]):
             raise ValueError('apartment')
-        apartment = int(args[0])
+        apartment = int(arguments[0])
         return generate_list(list_expenses_for_apartment(apartment_expense_data, apartment))
-    elif len(args) == 2:
-        if not valid_relation(args[0]):
+    elif len(arguments) == 2:
+        if not valid_relation(arguments[0]):
             raise ValueError('relation')
-        relation = args[0]
+        relation = arguments[0]
         try:
-            amount = int(args[1])
+            amount = int(arguments[1])
         except ValueError:
             raise ValueError("int")
         return list_expenses_for_amount(apartment_expense_data, relation, amount)
@@ -240,27 +240,27 @@ def list_expenses_for_amount(apartment_expense_data, relation, amount):
     return ''.join(apartments[:-1])
 
 
-def ui_sum(apartment_expense_data, args):
+def ui_sum(apartment_expense_data, arguments):
     pass
 
 
-def ui_max(apartment_expense_data, args):
+def ui_max(apartment_expense_data, arguments):
     pass
 
 
-def ui_sort(apartment_expense_data, args):
+def ui_sort(apartment_expense_data, arguments):
     pass
 
 
-def ui_filter(apartment_expense_data, args):
+def ui_filter(apartment_expense_data, arguments):
     pass
 
 
-def ui_undo(apartment_expense_data, args):
+def ui_undo(apartment_expense_data, arguments):
     pass
 
 
-def ui_help(apartment_expense_data, args):
+def ui_help(apartment_expense_data, arguments):
     commands = {
         'add': '''
 add <apartment> <type> <amount>
@@ -335,13 +335,13 @@ You can undo all operations performed since program start by repeatedly calling 
         'help': "Choose another command",
         'credits': "Shows the credits of the program"
     }
-    if len(args) == 0:
+    if len(arguments) == 0:
         print("Valid commands:")
         for command in commands.keys():
             print(command)
         print("Type 'help <command>' to get the command's possible arguments")
-    elif len(args) == 1:
-        command = args[0]
+    elif len(arguments) == 1:
+        command = arguments[0]
         if command in commands.keys():
             print(commands[command])
         else:
@@ -350,7 +350,7 @@ You can undo all operations performed since program start by repeatedly calling 
         print("Unknown arguments")
 
 
-def ui_credits(apartment_expense_data, command_args):
+def ui_credits(apartment_expense_data, command_arguments):
     print('''
     Udrea Horațiu 917 2018
                                           
@@ -381,7 +381,7 @@ def ui_handle_value_error(ve):
         'apartment': "The apartment number must be a positive integer value",
         'amount': "The amount must be a positive integer value",
         'type': "The type must be one of these values: " + str(get_type_list()),
-        'args': "Invalid arguments",
+        'arguments': "Invalid arguments",
         'relation': "Provide a valid relation [ < | = | > ]",
         'int': "Provide a valid integer",
         'incr': "The first apartment number must be lower than the second one"
@@ -586,20 +586,20 @@ def test_apartment_expense_dict():
     try:
         create_apartment_expense_dict(12, 'sample', 240)
         assert False
-    except ValueError as ve:
-        assert str(ve) == 'type'
+    except ValueError as value_error:
+        assert str(value_error) == 'type'
 
     try:
         create_apartment_expense_dict(-12, 'water', '240')
         assert False
-    except ValueError as ve:
-        assert str(ve) == 'apartment'
+    except ValueError as value_error:
+        assert str(value_error) == 'apartment'
 
     try:
         create_apartment_expense_dict('12', 'other', -43)
         assert False
-    except ValueError as ve:
-        assert str(ve) == 'amount'
+    except ValueError as value_error:
+        assert str(value_error) == 'amount'
 
 
 def test_apartment_expense_data():
