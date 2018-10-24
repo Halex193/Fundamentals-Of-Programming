@@ -75,15 +75,19 @@ def ui_add(apartment_expense_data, args):
 def command_add(apartment_expense_data, args):
     if len(args) != 3:
         raise ValueError('args')
-    apartment = int(args[0])
-    if not valid_apartment(apartment):
+
+    if not valid_apartment(args[0]):
         raise ValueError('apartment')
-    type = args[1]
-    if not valid_type(type):
+    apartment = int(args[0])
+
+    if not valid_type(args[1]):
         raise ValueError('type')
-    amount = int(args[2])
-    if not valid_amount(amount):
+    type = args[1]
+
+    if not valid_amount(args[2]):
         raise ValueError('amount')
+    amount = int(args[2])
+
     return add_apartment_expense(apartment_expense_data, apartment, type, amount)
 
 
@@ -100,14 +104,26 @@ def ui_remove(apartment_expense_data, args):
 def command_remove(apartment_expense_data, args):
     if len(args) not in range(1, 4 + 1):
         raise ValueError('args')
-    if valid_apartment(args[0]):
+    if valid_integer(args[0]):
+        if not valid_apartment(args[0]):
+            raise ValueError('apartment')
         if len(args) == 1:
             return remove_apartment_expenses_from_apartment_number(apartment_expense_data, int(args[0]))
-        elif len(args) == 3 and args[1] == "to" and valid_apartment(args[2]):
-            return remove_apartment_expenses_from_apartment_range(apartment_expense_data, int(args[0]), int(args[2]))
+        elif len(args) == 3 and args[1] == "to":
+            if not valid_apartment(args[2]):
+                raise ValueError('apartment')
+
+            apartment_start = int(args[0])
+            apartment_end = int(args[2])
+            if apartment_start >= apartment_end:
+                raise ValueError('incr')
+            return remove_apartment_expenses_from_apartment_range(apartment_expense_data, apartment_start,
+                                                                  apartment_end)
         else:
             raise ValueError("args")
-    elif valid_type(args[0]):
+    elif len(args) == 1:
+        if not valid_type(args[0]):
+            raise ValueError('type')
         return remove_apartment_expenses_from_type(apartment_expense_data, args[0])
     else:
         raise ValueError('args')
@@ -367,7 +383,8 @@ def ui_handle_value_error(ve):
         'type': "The type must be one of these values: " + str(get_type_list()),
         'args': "Invalid arguments",
         'relation': "Provide a valid relation [ < | = | > ]",
-        'int': "Provide a valid integer"
+        'int': "Provide a valid integer",
+        'incr': "The first apartment number must be lower than the second one"
     }
     if str(ve) in error_messages.keys():
         print(error_messages[str(ve)])
@@ -437,6 +454,10 @@ def remove_apartment_expenses_from_apartment_number(apartment_expense_data, apar
 
 
 def remove_apartment_expenses_from_apartment_range(apartment_expense_data, apartment_start, apartment_end):
+    max_apartment_number = max(get_apartments(apartment_expense_data))
+    if apartment_end > max_apartment_number:
+        apartment_end = max_apartment_number
+
     removed = 0
     for apartment in range(apartment_start, apartment_end + 1):
         removed += remove_apartment_expenses_from_apartment_number(apartment_expense_data, apartment)
@@ -468,7 +489,7 @@ def populate_apartment_expense_data(apartment_expense_data):
 # endregion
 
 
-# region apartment_expense
+# region apartment_expense_dict
 def create_apartment_expense_dict(apartment, type, amount):
     if not valid_apartment(apartment):
         raise ValueError('apartment')
@@ -488,6 +509,14 @@ def create_apartment_expense_dict(apartment, type, amount):
 
 def get_apartment(apartment_expense_dict):
     return apartment_expense_dict['apartment']
+
+
+def valid_integer(integer):
+    try:
+        int(integer)
+        return True
+    except ValueError:
+        return False
 
 
 def valid_apartment(apartment):
@@ -547,7 +576,7 @@ def valid_relation(relation):
 
 # endregion
 
-
+# region tests
 def test_apartment_expense_dict():
     apartment_expense_dict = create_apartment_expense_dict(12, 'water', 45)
     assert get_apartment(apartment_expense_dict) == 12
@@ -610,6 +639,8 @@ def run_tests():
     test_command_add()
     test_command_remove()
 
+
+# endregion
 
 run_tests()
 run()
