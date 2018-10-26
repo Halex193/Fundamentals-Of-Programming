@@ -8,7 +8,21 @@ def initialize_data():
     apartment_expense_data = create_apartment_expense_data()
     populate_apartment_expense_data(apartment_expense_data)
     changes_stack = create_changes_stack()
-    return (apartment_expense_data, changes_stack)
+    return apartment_expense_data, changes_stack
+
+
+def create_changes_stack():
+    return []
+
+
+def push_command_stack(command_stack, command):
+    command_stack.append(command)
+
+
+def pop_command_stack(command_stack):
+    if len(command_stack) == 0:
+        return ""
+    return command_stack.pop()
 
 
 def command_add(apartment_expense_data, arguments):
@@ -37,7 +51,7 @@ def command_remove(apartment_expense_data, arguments):
         if not valid_apartment(arguments[0]):
             raise ValueError('apartment')
         if len(arguments) == 1:
-            return remove_apartment_expenses_from_apartment_number(apartment_expense_data, int(arguments[0]))
+            return remove_apartment_expenses(apartment_expense_data, int(arguments[0]))
         elif len(arguments) == 3 and arguments[1] == "to":
             if not valid_apartment(arguments[2]):
                 raise ValueError('apartment')
@@ -46,8 +60,8 @@ def command_remove(apartment_expense_data, arguments):
             apartment_end = int(arguments[2])
             if apartment_start >= apartment_end:
                 raise ValueError('increasing')
-            return remove_apartment_expenses_from_apartment_range(apartment_expense_data, apartment_start,
-                                                                  apartment_end)
+            return remove_apartment_expenses_from_range(apartment_expense_data, apartment_start,
+                                                        apartment_end)
         else:
             raise ValueError("arguments")
     elif len(arguments) == 1:
@@ -79,16 +93,16 @@ def command_replace(apartment_expense_data, arguments):
     return False
 
 
-def command_list(apartment_expense_data, arguments):
+def command_list(apartment_expense_data, arguments, generate_expense_list, generate_apartment_list):
     if len(arguments) > 2:
         raise ValueError('arguments')
     if len(arguments) == 0:
-        return generate_list(list_all_expenses(apartment_expense_data))
+        return generate_expense_list(list_all_expenses(apartment_expense_data))
     elif len(arguments) == 1:
         if not valid_apartment(arguments[0]):
             raise ValueError('apartment')
         apartment = int(arguments[0])
-        return generate_list(list_expenses_for_apartment(apartment_expense_data, apartment))
+        return generate_expense_list(list_expenses_for_apartment(apartment_expense_data, apartment))
     elif len(arguments) == 2:
         if not valid_relation(arguments[0]):
             raise ValueError('relation')
@@ -97,14 +111,7 @@ def command_list(apartment_expense_data, arguments):
             amount = int(arguments[1])
         except ValueError:
             raise ValueError("int")
-        return list_expenses_for_amount(apartment_expense_data, relation, amount)
-
-
-def generate_list(apartment_expenses):
-    string_list = []
-    for apartment_expense in apartment_expenses:
-        string_list.append(apartment_expense_dict_to_string(apartment_expense) + "\n")
-    return ''.join(string_list)
+        return generate_apartment_list(list_expenses_for_amount(apartment_expense_data, relation, amount))
 
 
 def list_all_expenses(apartment_expense_data):
@@ -141,3 +148,16 @@ def list_expenses_for_amount(apartment_expense_data, relation, amount):
             apartments.append(str(apartment))
             apartments.append(", ")
     return ''.join(apartments[:-1])
+
+
+def populate_apartment_expense_data(apartment_expense_data):
+    add_apartment_expense(apartment_expense_data, 1, 'water', 100)
+    add_apartment_expense(apartment_expense_data, 1, 'gas', 100)
+    add_apartment_expense(apartment_expense_data, 2, 'heating', 200)
+    add_apartment_expense(apartment_expense_data, 2, 'other', 100)
+    add_apartment_expense(apartment_expense_data, 3, 'electricity', 300)
+    add_apartment_expense(apartment_expense_data, 4, 'gas', 400)
+    add_apartment_expense(apartment_expense_data, 4, 'water', 200)
+    add_apartment_expense(apartment_expense_data, 5, 'other', 500)
+    add_apartment_expense(apartment_expense_data, 6, 'heating', 450)
+    add_apartment_expense(apartment_expense_data, 6, 'water', 100)
