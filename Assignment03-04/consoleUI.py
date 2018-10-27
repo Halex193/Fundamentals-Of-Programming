@@ -96,6 +96,34 @@ def ui_list(apartment_expense_data, arguments):
         return False
 
 
+def apartment_expense_dict_to_string(apartment_expense_dict):
+    apartment = get_apartment(apartment_expense_dict)
+    amount = get_amount(apartment_expense_dict)
+    type = get_type(apartment_expense_dict)
+
+    max_length = 0
+    for i in get_type_list():
+        if len(i) > max_length:
+            max_length = len(i)
+
+    return "{ Apartment " + str(apartment) + ", Expense type: " + type + (
+            max_length - len(type)) * " " + ", Amount: " + str(amount) + " RON }"
+
+
+def generate_list(apartment_expenses):
+    string_list = []
+    for apartment_expense in apartment_expenses:
+        string_list.append(apartment_expense_dict_to_string(apartment_expense) + "\n")
+    return ''.join(string_list)
+
+
+def generate_apartment_list(apartment_list):
+    string_list = []
+    for apartment in apartment_list:
+        string_list.append(str(apartment) + ", ")
+    return ''.join(string_list)
+
+
 def ui_sum(apartment_expense_data, arguments):
     pass
 
@@ -246,28 +274,3 @@ def ui_handle_value_error(ve):
         print(error_messages[str(ve)])
     else:
         raise NotImplementedError('ValueError - ' + str(ve))
-
-
-def apartment_expense_dict_to_string(apartment_expense_dict):
-    apartment = get_apartment(apartment_expense_dict)
-    amount = get_amount(apartment_expense_dict)
-    type = get_type(apartment_expense_dict)
-
-    max_length = 0
-    for i in get_type_list():
-        if len(i) > max_length:
-            max_length = len(i)
-
-    return "{ Apartment " + str(apartment) + ", Expense type: " + type + (
-            max_length - len(type)) * " " + ", Amount: " + str(amount) + " RON }"
-
-
-def generate_list(apartment_expenses):
-    string_list = []
-    for apartment_expense in apartment_expenses:
-        string_list.append(apartment_expense_dict_to_string(apartment_expense) + "\n")
-    return ''.join(string_list)
-
-
-def generate_apartment_list(apartment_list):
-    return apartment_list

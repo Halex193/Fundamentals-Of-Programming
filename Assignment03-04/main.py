@@ -22,4 +22,3 @@ def run():
 
 run_tests()
 run()
-# TODO create the rest of the commands

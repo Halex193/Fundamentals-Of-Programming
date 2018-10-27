@@ -5,7 +5,7 @@ from logic import *
 
 
 def test_apartment_expense_dict():
-    # test creation
+    # test creation and getters
     apartment_expense_dict = create_apartment_expense_dict(12, 'water', 45)
     assert get_apartment(apartment_expense_dict) == 12
     assert get_type(apartment_expense_dict) == 'water'
@@ -35,6 +35,7 @@ def test_apartment_expense_data():
     apartment_expense_data = create_apartment_expense_data()
     # test creation
     assert len(get_apartments(apartment_expense_data)) == 0
+
     # test addition of elements
     add_apartment_expense(apartment_expense_data, 12, 'gas', 240)
     assert len(get_apartments(apartment_expense_data)) == 1
@@ -43,11 +44,26 @@ def test_apartment_expense_data():
     assert len(get_apartments(apartment_expense_data)) == 2
     assert get_apartment_expense(apartment_expense_data, 1, 'water') == 50
 
+    # test getters
+    assert 1 in get_apartments(apartment_expense_data)
+    assert 12 in get_apartments(apartment_expense_data)
+    assert 'gas' in get_types_for_apartment(apartment_expense_data, 12)
+
+    # test updating of elements
+    set_apartment_expense(apartment_expense_data, 1, 'water', 500)
+    assert get_apartment_expense(apartment_expense_data, 1, 'water') == 500
+    set_apartment_expense(apartment_expense_data, 12, 'gas', 250)
+    assert get_apartment_expense(apartment_expense_data, 12, 'gas') == 250
+
     # test removal of elements
     remove_apartment_expenses(apartment_expense_data, 12)
     assert len(get_apartments(apartment_expense_data)) == 1
     add_apartment_expense(apartment_expense_data, 2, 'gas', 500)
     remove_apartment_expenses_from_range(apartment_expense_data, 1, 3)
+    assert len(get_apartments(apartment_expense_data)) == 0
+    add_apartment_expense(apartment_expense_data, 3, 'water', 240)
+    add_apartment_expense(apartment_expense_data, 4, 'water', 3000)
+    remove_apartment_expenses_from_type(apartment_expense_data, 'water')
     assert len(get_apartments(apartment_expense_data)) == 0
 
 

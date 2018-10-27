@@ -167,3 +167,11 @@ def parse_relation(relation):
     if not valid_relation(relation):
         raise ValueError('relation')
     return relation
+
+
+def raise_argument_error():
+    """
+    Raises argument error
+    :raises: ValueError('arguments') always
+    """
+    raise ValueError('arguments')

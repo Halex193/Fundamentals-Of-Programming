@@ -168,3 +168,59 @@ def remove_apartment_expenses_from_type(apartment_expense_data, type):
     for apartment in apartments_to_delete:
         remove_expense(apartment_expense_data, apartment, type)
     return len(apartments_to_delete)
+
+
+def list_all_expenses(apartment_expense_data):
+    """
+    Gets all apartment expenses
+    :param apartment_expense_data: The data instance
+    :return: list of apartment_expense_dict - The list of all apartment expenses
+    """
+    apartment_expenses = []
+    for apartment in get_apartments(apartment_expense_data):
+        for type in get_types_for_apartment(apartment_expense_data, apartment):
+            amount = get_apartment_expense(apartment_expense_data, apartment, type)
+            apartment_expenses.append(create_apartment_expense_dict(apartment, type, amount))
+    return apartment_expenses
+
+
+def list_expenses_for_apartment(apartment_expense_data, apartment):
+    """
+    Gets all apartment expenses for the given apartment number
+    :param apartment_expense_data: The data instance
+    :param apartment: int/string - The apartment number
+    :return: list of apartment_expense_dict - The list of all apartment expenses of the given apartment
+    """
+    apartment = parse_apartment(apartment)
+    apartment_expenses = []
+    if apartment in get_apartments(apartment_expense_data):
+        for type in get_types_for_apartment(apartment_expense_data, apartment):
+            amount = get_apartment_expense(apartment_expense_data, apartment, type)
+            apartment_expenses.append(create_apartment_expense_dict(apartment, type, amount))
+    return apartment_expenses
+
+
+def list_expenses_for_amount(apartment_expense_data, relation, amount):
+    """
+    Gets the apartments that have the total expenses in the specified relation with the given amount
+    :param apartment_expense_data: The data instance
+    :param relation: The relation to compare the values
+    :param amount: The amount with which to compare the total expenses of the apartments
+    :return: list of int - The list of apartments which have the total
+             expenses in the specified relation with the given amount
+    """
+    relation = parse_relation(relation)
+    amount = parse_int(amount)
+
+    apartments = []
+    for apartment in get_apartments(apartment_expense_data):
+        amount_sum = 0
+        for type in get_types_for_apartment(apartment_expense_data, apartment):
+            amount_sum += get_apartment_expense(apartment_expense_data, apartment, type)
+        if relation == "<" and amount_sum < amount:
+            apartments.append(apartment)
+        elif relation == "=" and amount_sum == amount:
+            apartments.append(apartment)
+        elif relation == ">" and amount_sum > amount:
+            apartments.append(apartment)
+    return apartments
