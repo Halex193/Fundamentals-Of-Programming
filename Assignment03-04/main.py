@@ -25,5 +25,5 @@ def run():
         menuUI.run()
 
 
-# run_tests()
+run_tests()
 run()

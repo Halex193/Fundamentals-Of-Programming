@@ -216,6 +216,7 @@ def list_expenses_for_amount(apartment_expense_data, relation, amount):
     :param amount: The amount with which to compare the total expenses of the apartments
     :return: list of int - The list of apartments which have the total
              expenses in the specified relation with the given amount
+             sorted in ascending order
     """
     relation = parse_relation(relation)
     amount = parse_int(amount)
@@ -229,7 +230,7 @@ def list_expenses_for_amount(apartment_expense_data, relation, amount):
             apartments.append(apartment)
         elif relation == ">" and amount_sum > amount:
             apartments.append(apartment)
-    return apartments
+    return sorted(apartments)
 
 
 def expense_sum(apartment_expense_data, apartment):
@@ -268,7 +269,8 @@ def command_max(apartment_expense_data, arguments):
     Determines the maximum amount for each apartment expense type
     :param apartment_expense_data: The data instance
     :param arguments: The command arguments
-    :return: dictionary - A dictionary having the expense types as keys and the maximum amounts as values
+    :return: dictionary - A dictionary having the expense types as keys and the
+             (apartment number-maximum amount) tuples as values
     """
     if len(arguments) != 0:
         raise_argument_error()

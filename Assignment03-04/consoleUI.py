@@ -172,8 +172,10 @@ def ui_sort(apartment_expense_data, arguments, changes_stack):
 
 
 def generate_type_list(expense_list):
+    type_list = []
     for pair in expense_list:
-        print("The total '" + pair[0] + "' expenses are " + str(pair[1]) + " RON")
+        type_list.append("The total '" + pair[0] + "' expenses are " + str(pair[1]) + " RON\n")
+    return ''.join(type_list)
 
 
 def ui_filter(apartment_expense_data, arguments, changes_stack):
