@@ -1,6 +1,8 @@
 # Assignment 03-04
 # Udrea Horațiu 917
-
+"""
+This is the console UI module
+"""
 from logic import *
 
 
@@ -42,14 +44,14 @@ def execute_command(apartment_expense_data, command, changes_stack):
 
     if command_name in commands.keys():
         command_arguments = get_command_arguments(command)
-        commands[command_name](apartment_expense_data, command_arguments)
+        commands[command_name](apartment_expense_data, command_arguments, changes_stack)
     else:
         print("Command not recognized")
 
 
-def ui_add(apartment_expense_data, arguments):
+def ui_add(apartment_expense_data, arguments, changes_stack):
     try:
-        added = command_add(apartment_expense_data, arguments)
+        added = command_add(apartment_expense_data, arguments, changes_stack)
         if added:
             print("Expense added")
         else:
@@ -60,9 +62,9 @@ def ui_add(apartment_expense_data, arguments):
         return False
 
 
-def ui_remove(apartment_expense_data, arguments):
+def ui_remove(apartment_expense_data, arguments, changes_stack):
     try:
-        number = command_remove(apartment_expense_data, arguments)
+        number = command_remove(apartment_expense_data, arguments, changes_stack)
         print(str(number) + " expense" + ("s" if number != 1 else "") + " removed")
         return True
     except ValueError as value_error:
@@ -70,9 +72,9 @@ def ui_remove(apartment_expense_data, arguments):
         return False
 
 
-def ui_replace(apartment_expense_data, arguments):
+def ui_replace(apartment_expense_data, arguments, changes_stack):
     try:
-        replaced = command_replace(apartment_expense_data, arguments)
+        replaced = command_replace(apartment_expense_data, arguments, changes_stack)
         if replaced:
             print("Amount replaced")
         else:
@@ -83,7 +85,7 @@ def ui_replace(apartment_expense_data, arguments):
         return False
 
 
-def ui_list(apartment_expense_data, arguments):
+def ui_list(apartment_expense_data, arguments, changes_stack):
     try:
         output = command_list(apartment_expense_data, arguments, generate_list, generate_apartment_list)
         if output == '':
@@ -124,27 +126,83 @@ def generate_apartment_list(apartment_list):
     return ''.join(string_list)
 
 
-def ui_sum(apartment_expense_data, arguments):
-    pass
+def ui_sum(apartment_expense_data, arguments, changes_stack):
+    try:
+        sum = command_sum(apartment_expense_data, arguments)
+        if sum != 0:
+            print("The " + arguments[0] + " expense sum is " + str(sum) + " RON")
+        else:
+            print("There are no " + arguments[0] + " expenses")
+        return True
+    except ValueError as value_error:
+        ui_handle_value_error(value_error)
+        return False
 
 
-def ui_max(apartment_expense_data, arguments):
-    pass
+def ui_max(apartment_expense_data, arguments, changes_stack):
+    try:
+        max = command_max(apartment_expense_data, arguments)
+        print_max(max)
+        return True
+    except ValueError as value_error:
+        ui_handle_value_error(value_error)
+        return False
 
 
-def ui_sort(apartment_expense_data, arguments):
-    pass
+def print_max(max):
+    if len(max) == 0:
+        print("There are no registered expenses")
+    else:
+        for type in max.keys():
+            print("Apartment " + str(max[type][0]) + " has the maximum expense for '" + type + "', which is " + str(
+                max[type][1]))
 
 
-def ui_filter(apartment_expense_data, arguments):
-    pass
+def ui_sort(apartment_expense_data, arguments, changes_stack):
+    try:
+        output = command_sort(apartment_expense_data, arguments, generate_apartment_list, generate_type_list)
+        if output == '':
+            print("Nothing to show")
+        else:
+            print(output)
+        return True
+    except ValueError as value_error:
+        ui_handle_value_error(value_error)
+        return False
 
 
-def ui_undo(apartment_expense_data, arguments):
-    pass
+def generate_type_list(expense_list):
+    for pair in expense_list:
+        print("The total '" + pair[0] + "' expenses are " + str(pair[1]) + " RON")
 
 
-def ui_help(apartment_expense_data, arguments):
+def ui_filter(apartment_expense_data, arguments, changes_stack):
+    try:
+        removed = command_filter(apartment_expense_data, arguments, changes_stack)
+        if removed == 0:
+            print("Nothing to remove")
+        else:
+            print(str(removed) + " expenses removed")
+        return True
+    except ValueError as value_error:
+        ui_handle_value_error(value_error)
+        return False
+
+
+def ui_undo(apartment_expense_data, arguments, changes_stack):
+    try:
+        undone = command_undo(apartment_expense_data, arguments, changes_stack)
+        if undone:
+            print("Command undone")
+        else:
+            print("No more commands to undo")
+        return True
+    except ValueError as value_error:
+        ui_handle_value_error(value_error)
+        return False
+
+
+def ui_help(apartment_expense_data, arguments, changes_stack):
     commands = {
         'add': '''
 add <apartment> <type> <amount>
@@ -191,7 +249,7 @@ sum gas – write the total amount for the expenses having type “gas”.
 max <apartment> 
 
 e.g. 
-max 25 – write the maximum amount per each expense type for apartment 25. 
+max 25 – write the maximum amount of the expenses for apartment 25. 
 ''',
         'sort': '''
 sort apartment
@@ -234,7 +292,7 @@ You can undo all operations performed since program start by repeatedly calling 
         print("Unknown arguments")
 
 
-def ui_credits(apartment_expense_data, command_arguments):
+def ui_credits(apartment_expense_data=None, command_arguments=None, changes_stack=None):
     print('''
     Udrea Horațiu 917 2018
 

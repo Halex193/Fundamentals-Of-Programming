@@ -60,13 +60,13 @@ def add_apartment_expense(apartment_expense_data, apartment, type, amount):
     :param apartment: int/string - The apartment number
     :param type: string - The expense type
     :param amount: int/string - The amount of the expense
-    :return: True if the expense was added, False otherwise (the expense already exists)
+    :returns: If the addition occurred, the apartment_expense_dict that has been added. Otherwise, returns None
     :raises ValueError: If the data parsing fails
     """
     if get_apartment_expense(apartment_expense_data, apartment, type) is None:
         set_apartment_expense(apartment_expense_data, apartment, type, amount)
-        return True
-    return False
+        return create_apartment_expense_dict(apartment, type, amount)
+    return None
 
 
 def get_apartments(apartment_expense_data):
@@ -98,18 +98,20 @@ def remove_expense(apartment_expense_data, apartment, type):
     :param apartment_expense_data: The data instance
     :param apartment: int/string - The apartment number
     :param type: string - The expense type
-    :return: True if the removal succeeded, False otherwise (the expense does not exist)
+    :return: The removed expense as a list if the removal occurred
+             or an empty list otherwise (the expense does not exist)
     :raises ValueError: If the data parsing fails
     """
     apartment = parse_apartment(apartment)
     type = parse_type(type)
     if apartment in get_apartments(apartment_expense_data):
         if type in get_types_for_apartment(apartment_expense_data, apartment):
+            amount = get_apartment_expense(apartment_expense_data, apartment, type)
             del apartment_expense_data[apartment][type]
             if len(apartment_expense_data[apartment]) == 0:
                 remove_apartment_expenses(apartment_expense_data, apartment)
-            return True
-    return False
+            return [create_apartment_expense_dict(apartment, type, amount)]
+    return []
 
 
 def remove_apartment_expenses(apartment_expense_data, apartment):
@@ -117,12 +119,15 @@ def remove_apartment_expenses(apartment_expense_data, apartment):
     Removes the expenses of the apartment
     :param apartment_expense_data: The data instance
     :param apartment: int/string - The apartment number
+    :returns: THe list of removed elements
     :raises ValueError: If the data parsing fails
     """
     apartment = parse_apartment(apartment)
-    removed = 0
+    removed = []
     if apartment in get_apartments(apartment_expense_data):
-        removed = len(get_types_for_apartment(apartment_expense_data, apartment))
+        for type in get_types_for_apartment(apartment_expense_data, apartment):
+            amount = get_apartment_expense(apartment_expense_data, apartment, type)
+            removed.append(create_apartment_expense_dict(apartment, type, amount))
         del apartment_expense_data[apartment]
     return removed
 
@@ -133,7 +138,7 @@ def remove_apartment_expenses_from_range(apartment_expense_data, start_apartment
     :param apartment_expense_data: The data instance
     :param start_apartment: The first apartment number to be removed
     :param end_apartment: The last apartment number to be removed
-    :return: int - The number of expenses removed
+    :return: The removed expenses
     :raises ValueError: ValueError('increasing') if the end value is equal or higher than the start value
                         ValueError if the data parsing fails
     """
@@ -146,9 +151,9 @@ def remove_apartment_expenses_from_range(apartment_expense_data, start_apartment
     if end_apartment > max_apartment_number:
         end_apartment = max_apartment_number
 
-    removed = 0
+    removed = []
     for apartment in range(start_apartment, end_apartment + 1):
-        removed += remove_apartment_expenses(apartment_expense_data, apartment)
+        removed.extend(remove_apartment_expenses(apartment_expense_data, apartment))
     return removed
 
 
@@ -157,7 +162,7 @@ def remove_apartment_expenses_from_type(apartment_expense_data, type):
     Removes all the expenses of the given type
     :param apartment_expense_data: The data instance
     :param type: string - The expense type
-    :return: int - The number of expenses deleted
+    :return: The removed expenses
     :raises ValueError: If the data parsing fails
     """
     type = parse_type(type)
@@ -165,9 +170,10 @@ def remove_apartment_expenses_from_type(apartment_expense_data, type):
     for apartment in get_apartments(apartment_expense_data):
         if type in get_types_for_apartment(apartment_expense_data, apartment):
             apartments_to_delete.append(apartment)
+    removed = []
     for apartment in apartments_to_delete:
-        remove_expense(apartment_expense_data, apartment, type)
-    return len(apartments_to_delete)
+        removed.extend(remove_expense(apartment_expense_data, apartment, type))
+    return removed
 
 
 def list_all_expenses(apartment_expense_data):
@@ -181,7 +187,7 @@ def list_all_expenses(apartment_expense_data):
         for type in get_types_for_apartment(apartment_expense_data, apartment):
             amount = get_apartment_expense(apartment_expense_data, apartment, type)
             apartment_expenses.append(create_apartment_expense_dict(apartment, type, amount))
-    return apartment_expenses
+    return sorted(apartment_expenses, key=lambda apartment_expense_dict: get_apartment(apartment_expense_dict))
 
 
 def list_expenses_for_apartment(apartment_expense_data, apartment):
@@ -198,29 +204,3 @@ def list_expenses_for_apartment(apartment_expense_data, apartment):
             amount = get_apartment_expense(apartment_expense_data, apartment, type)
             apartment_expenses.append(create_apartment_expense_dict(apartment, type, amount))
     return apartment_expenses
-
-
-def list_expenses_for_amount(apartment_expense_data, relation, amount):
-    """
-    Gets the apartments that have the total expenses in the specified relation with the given amount
-    :param apartment_expense_data: The data instance
-    :param relation: The relation to compare the values
-    :param amount: The amount with which to compare the total expenses of the apartments
-    :return: list of int - The list of apartments which have the total
-             expenses in the specified relation with the given amount
-    """
-    relation = parse_relation(relation)
-    amount = parse_int(amount)
-
-    apartments = []
-    for apartment in get_apartments(apartment_expense_data):
-        amount_sum = 0
-        for type in get_types_for_apartment(apartment_expense_data, apartment):
-            amount_sum += get_apartment_expense(apartment_expense_data, apartment, type)
-        if relation == "<" and amount_sum < amount:
-            apartments.append(apartment)
-        elif relation == "=" and amount_sum == amount:
-            apartments.append(apartment)
-        elif relation == ">" and amount_sum > amount:
-            apartments.append(apartment)
-    return apartments

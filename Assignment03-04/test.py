@@ -1,6 +1,8 @@
 # Assignment 03-04
 # Udrea Horațiu 917
-
+"""
+The test module of the application
+"""
 from logic import *
 
 

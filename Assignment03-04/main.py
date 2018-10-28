@@ -1,3 +1,8 @@
+# Assignment 03-04
+# Udrea Horațiu 917
+"""
+This is the main module which should be run in rder to start the application
+"""
 import consoleUI
 import menuUI
 from test import run_tests
@@ -20,5 +25,5 @@ def run():
         menuUI.run()
 
 
-run_tests()
+# run_tests()
 run()

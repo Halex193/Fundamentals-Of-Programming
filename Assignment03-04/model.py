@@ -1,3 +1,5 @@
+# Assignment 03-04
+# Udrea Horațiu 917
 """
 Defines the operations on the apartment_expense_dict model
 """
