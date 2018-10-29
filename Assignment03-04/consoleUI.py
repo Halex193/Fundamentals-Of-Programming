@@ -113,6 +113,9 @@ def apartment_expense_dict_to_string(apartment_expense_dict):
 
 
 def generate_list(apartment_expenses):
+    """
+    Converts a list of apartment_expense_dict to string
+    """
     string_list = []
     for apartment_expense in apartment_expenses:
         string_list.append(apartment_expense_dict_to_string(apartment_expense) + "\n")
@@ -120,6 +123,9 @@ def generate_list(apartment_expenses):
 
 
 def generate_apartment_list(apartment_list):
+    """
+    Converts a list of apartments to string
+    """
     string_list = []
     for apartment in apartment_list:
         string_list.append(str(apartment) + ", ")
@@ -150,6 +156,9 @@ def ui_max(apartment_expense_data, arguments, changes_stack):
 
 
 def print_max(max):
+    """
+    Converts the command_max output to string
+    """
     if len(max) == 0:
         print("There are no registered expenses")
     else:
@@ -172,6 +181,9 @@ def ui_sort(apartment_expense_data, arguments, changes_stack):
 
 
 def generate_type_list(expense_list):
+    """
+    Converts a type-amount tuple list to string
+    """
     type_list = []
     for pair in expense_list:
         type_list.append("The total '" + pair[0] + "' expenses are " + str(pair[1]) + " RON\n")
