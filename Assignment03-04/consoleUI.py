@@ -7,13 +7,13 @@ from logic import *
 
 
 def run():
-    data = initialize_data()
-    apartment_expense_data = data[0]
-    changes_stack = data[1]
+    apartment_expense_data, changes_stack = initialize_data()
 
     print("Type 'help' to get the valid commands")
     while True:
+        print()
         command = input("> ")
+        print()
         if command == "exit":
             return
         execute_command(apartment_expense_data, command, changes_stack)
@@ -44,58 +44,41 @@ def execute_command(apartment_expense_data, command, changes_stack):
 
     if command_name in commands.keys():
         command_arguments = get_command_arguments(command)
-        commands[command_name](apartment_expense_data, command_arguments, changes_stack)
+        try:
+            commands[command_name](apartment_expense_data, command_arguments, changes_stack)
+        except ValueError as value_error:
+            ui_handle_value_error(value_error)
     else:
         print("Command not recognized")
 
 
 def ui_add(apartment_expense_data, arguments, changes_stack):
-    try:
-        added = command_add(apartment_expense_data, arguments, changes_stack)
-        if added:
-            print("Expense added")
-        else:
-            print("Expense already exists. Use 'replace' command instead")
-        return True
-    except ValueError as value_error:
-        ui_handle_value_error(value_error)
-        return False
+    added = command_add(apartment_expense_data, arguments, changes_stack)
+    if added:
+        print("Expense added")
+    else:
+        print("Expense already exists. Use 'replace' command instead")
 
 
 def ui_remove(apartment_expense_data, arguments, changes_stack):
-    try:
-        number = command_remove(apartment_expense_data, arguments, changes_stack)
-        print(str(number) + " expense" + ("s" if number != 1 else "") + " removed")
-        return True
-    except ValueError as value_error:
-        ui_handle_value_error(value_error)
-        return False
+    number = command_remove(apartment_expense_data, arguments, changes_stack)
+    print(str(number) + " expense" + ("s" if number != 1 else "") + " removed")
 
 
 def ui_replace(apartment_expense_data, arguments, changes_stack):
-    try:
-        replaced = command_replace(apartment_expense_data, arguments, changes_stack)
-        if replaced:
-            print("Amount replaced")
-        else:
-            print("Expense does not exist. Use 'add' command instead")
-        return True
-    except ValueError as value_error:
-        ui_handle_value_error(value_error)
-        return False
+    replaced = command_replace(apartment_expense_data, arguments, changes_stack)
+    if replaced:
+        print("Amount replaced")
+    else:
+        print("Expense does not exist. Use 'add' command instead")
 
 
 def ui_list(apartment_expense_data, arguments, changes_stack):
-    try:
-        output = command_list(apartment_expense_data, arguments, generate_list, generate_apartment_list)
-        if output == '':
-            print("Nothing to show")
-        else:
-            print(output)
-        return True
-    except ValueError as value_error:
-        ui_handle_value_error(value_error)
-        return False
+    output = command_list(apartment_expense_data, arguments, generate_list, generate_apartment_list)
+    if output == '':
+        print("Nothing to show")
+    else:
+        print(output)
 
 
 def apartment_expense_dict_to_string(apartment_expense_dict):
@@ -133,26 +116,16 @@ def generate_apartment_list(apartment_list):
 
 
 def ui_sum(apartment_expense_data, arguments, changes_stack):
-    try:
-        sum = command_sum(apartment_expense_data, arguments)
-        if sum != 0:
-            print("The " + arguments[0] + " expense sum is " + str(sum) + " RON")
-        else:
-            print("There are no " + arguments[0] + " expenses")
-        return True
-    except ValueError as value_error:
-        ui_handle_value_error(value_error)
-        return False
+    sum = command_sum(apartment_expense_data, arguments)
+    if sum != 0:
+        print("The " + arguments[0] + " expense sum is " + str(sum) + " RON")
+    else:
+        print("There are no " + arguments[0] + " expenses")
 
 
 def ui_max(apartment_expense_data, arguments, changes_stack):
-    try:
-        max = command_max(apartment_expense_data, arguments)
-        print_max(max)
-        return True
-    except ValueError as value_error:
-        ui_handle_value_error(value_error)
-        return False
+    max = command_max(apartment_expense_data, arguments)
+    print_max(max)
 
 
 def print_max(max):
@@ -168,16 +141,11 @@ def print_max(max):
 
 
 def ui_sort(apartment_expense_data, arguments, changes_stack):
-    try:
-        output = command_sort(apartment_expense_data, arguments, generate_apartment_list, generate_type_list)
-        if output == '':
-            print("Nothing to show")
-        else:
-            print(output)
-        return True
-    except ValueError as value_error:
-        ui_handle_value_error(value_error)
-        return False
+    output = command_sort(apartment_expense_data, arguments, generate_apartment_list, generate_type_list)
+    if output == '':
+        print("Nothing to show")
+    else:
+        print(output)
 
 
 def generate_type_list(expense_list):
@@ -191,29 +159,19 @@ def generate_type_list(expense_list):
 
 
 def ui_filter(apartment_expense_data, arguments, changes_stack):
-    try:
-        removed = command_filter(apartment_expense_data, arguments, changes_stack)
-        if removed == 0:
-            print("Nothing to remove")
-        else:
-            print(str(removed) + " expenses removed")
-        return True
-    except ValueError as value_error:
-        ui_handle_value_error(value_error)
-        return False
+    removed = command_filter(apartment_expense_data, arguments, changes_stack)
+    if removed == 0:
+        print("Nothing to remove")
+    else:
+        print(str(removed) + " expenses removed")
 
 
 def ui_undo(apartment_expense_data, arguments, changes_stack):
-    try:
-        undone = command_undo(apartment_expense_data, arguments, changes_stack)
-        if undone:
-            print("Command undone")
-        else:
-            print("No more commands to undo")
-        return True
-    except ValueError as value_error:
-        ui_handle_value_error(value_error)
-        return False
+    undone = command_undo(apartment_expense_data, arguments, changes_stack)
+    if undone:
+        print("Command undone")
+    else:
+        print("No more commands to undo")
 
 
 def ui_help(apartment_expense_data, arguments, changes_stack):

@@ -24,9 +24,7 @@ def ui_show_menu():
 
 
 def run():
-    data = initialize_data()
-    apartment_expense_data = data[0]
-    changes_stack = data[1]
+    apartment_expense_data, changes_stack = initialize_data()
 
     while True:
         choice = ui_show_menu()
@@ -49,27 +47,25 @@ def execute_command(apartment_expense_data, choice, changes_stack):
                 }
 
     if choice in commands.keys():
-        commands[choice](apartment_expense_data, changes_stack)
+        try:
+            commands[choice](apartment_expense_data, changes_stack)
+        except ValueError as value_error:
+            ui_handle_value_error(value_error)
     else:
         print("Choice not valid")
 
 
 def ui_add(apartment_expense_data, changes_stack):
-    try:
-        apartment = parse_apartment(input("Choose an apartment number: "))
-        type = parse_type(input("Choose a type of expense: "))
-        amount = parse_amount(input("Choose an amount for the expense: "))
+    apartment = parse_apartment(input("Choose an apartment number: "))
+    type = parse_type(input("Choose a type of expense: "))
+    amount = parse_amount(input("Choose an amount for the expense: "))
 
-        arguments = [apartment, type, amount]
-        added = command_add(apartment_expense_data, arguments, changes_stack)
-        if added:
-            print("Expense added")
-        else:
-            print("Expense already exists. Use 'replace' command instead")
-        return True
-    except ValueError as value_error:
-        ui_handle_value_error(value_error)
-        return False
+    arguments = [apartment, type, amount]
+    added = command_add(apartment_expense_data, arguments, changes_stack)
+    if added:
+        print("Expense added")
+    else:
+        print("Expense already exists. Use 'replace' command instead")
 
 
 def ui_remove(apartment_expense_data, changes_stack):
@@ -77,45 +73,35 @@ def ui_remove(apartment_expense_data, changes_stack):
                    "2. Remove expenses for a range of apartments",
                    "3. Remove expenses for a type"
                    ]
-    try:
-        choice = ui_show_options(option_list)
-        arguments = []
-        if choice == '1':
-            apartment = parse_apartment(input("Choose an apartment number: "))
-            arguments = [apartment]
-        elif choice == '2':
-            start_apartment = parse_apartment(input("Choose the first apartment number: "))
-            end_apartment = parse_apartment(input("Choose the last apartment number: "))
-            arguments = [start_apartment, 'to', end_apartment]
-        elif choice == '3':
-            type = parse_type(input("Choose a type of expense to remove: "))
-            arguments = [type]
-        else:
-            raise_choice_error()
+    choice = ui_show_options(option_list)
+    arguments = []
+    if choice == '1':
+        apartment = parse_apartment(input("Choose an apartment number: "))
+        arguments = [apartment]
+    elif choice == '2':
+        start_apartment = parse_apartment(input("Choose the first apartment number: "))
+        end_apartment = parse_apartment(input("Choose the last apartment number: "))
+        arguments = [start_apartment, 'to', end_apartment]
+    elif choice == '3':
+        type = parse_type(input("Choose a type of expense to remove: "))
+        arguments = [type]
+    else:
+        raise_choice_error()
 
-        number = command_remove(apartment_expense_data, arguments, changes_stack)
-        print(str(number) + " expense" + ("s" if number != 1 else "") + " removed")
-        return True
-    except ValueError as value_error:
-        ui_handle_value_error(value_error)
-        return False
+    number = command_remove(apartment_expense_data, arguments, changes_stack)
+    print(str(number) + " expense" + ("s" if number != 1 else "") + " removed")
 
 
 def ui_replace(apartment_expense_data, changes_stack):
-    try:
-        apartment = parse_apartment(input("Choose an apartment number: "))
-        type = parse_type(input("Choose an expense type: "))
-        amount = parse_amount(input("Choose the new amount for the expense: "))
-        arguments = [apartment, type, 'with', amount]
-        replaced = command_replace(apartment_expense_data, arguments, changes_stack)
-        if replaced:
-            print("Amount replaced")
-        else:
-            print("Expense does not exist. Use 'add' command instead")
-        return True
-    except ValueError as value_error:
-        ui_handle_value_error(value_error)
-        return False
+    apartment = parse_apartment(input("Choose an apartment number: "))
+    type = parse_type(input("Choose an expense type: "))
+    amount = parse_amount(input("Choose the new amount for the expense: "))
+    arguments = [apartment, type, 'with', amount]
+    replaced = command_replace(apartment_expense_data, arguments, changes_stack)
+    if replaced:
+        print("Amount replaced")
+    else:
+        print("Expense does not exist. Use 'add' command instead")
 
 
 def ui_list(apartment_expense_data, changes_stack):
@@ -135,16 +121,11 @@ def ui_list(apartment_expense_data, changes_stack):
         arguments = [relation, amount]
     else:
         raise_choice_error()
-    try:
-        output = command_list(apartment_expense_data, arguments, generate_list, generate_apartment_list)
-        if output == '':
-            print("Nothing to show")
-        else:
-            print(output)
-        return True
-    except ValueError as value_error:
-        ui_handle_value_error(value_error)
-        return False
+    output = command_list(apartment_expense_data, arguments, generate_list, generate_apartment_list)
+    if output == '':
+        print("Nothing to show")
+    else:
+        print(output)
 
 
 def apartment_expense_dict_to_string(apartment_expense_dict):
@@ -182,29 +163,19 @@ def generate_apartment_list(apartment_list):
 
 
 def ui_sum(apartment_expense_data, changes_stack):
-    try:
-        type = parse_type(input("Choose an expense type: "))
-        arguments = [type]
-        sum = command_sum(apartment_expense_data, arguments)
-        if sum != 0:
-            print("The " + arguments[0] + " expense sum is " + str(sum) + " RON")
-        else:
-            print("There are no " + arguments[0] + " expenses")
-        return True
-    except ValueError as value_error:
-        ui_handle_value_error(value_error)
-        return False
+    type = parse_type(input("Choose an expense type: "))
+    arguments = [type]
+    sum = command_sum(apartment_expense_data, arguments)
+    if sum != 0:
+        print("The " + arguments[0] + " expense sum is " + str(sum) + " RON")
+    else:
+        print("There are no " + arguments[0] + " expenses")
 
 
 def ui_max(apartment_expense_data, changes_stack):
-    try:
-        arguments = []
-        max = command_max(apartment_expense_data, arguments)
-        print_max(max)
-        return True
-    except ValueError as value_error:
-        ui_handle_value_error(value_error)
-        return False
+    arguments = []
+    max = command_max(apartment_expense_data, arguments)
+    print_max(max)
 
 
 def print_max(max):
@@ -223,24 +194,19 @@ def ui_sort(apartment_expense_data, changes_stack):
     option_list = ["1. Sort by apartment",
                    "2. Sort by type"
                    ]
-    try:
-        choice = ui_show_options(option_list)
-        arguments = []
-        if choice == '1':
-            arguments = ['apartment']
-        elif choice == '2':
-            arguments = ['type']
-        else:
-            raise_choice_error()
-        output = command_sort(apartment_expense_data, arguments, generate_apartment_list, generate_type_list)
-        if output == '':
-            print("Nothing to show")
-        else:
-            print(output)
-        return True
-    except ValueError as value_error:
-        ui_handle_value_error(value_error)
-        return False
+    choice = ui_show_options(option_list)
+    arguments = []
+    if choice == '1':
+        arguments = ['apartment']
+    elif choice == '2':
+        arguments = ['type']
+    else:
+        raise_choice_error()
+    output = command_sort(apartment_expense_data, arguments, generate_apartment_list, generate_type_list)
+    if output == '':
+        print("Nothing to show")
+    else:
+        print(output)
 
 
 def generate_type_list(expense_list):
@@ -257,40 +223,30 @@ def ui_filter(apartment_expense_data, changes_stack):
     option_list = ["1. Filter by type",
                    "2. Filter by value"
                    ]
-    try:
-        choice = ui_show_options(option_list)
-        arguments = []
-        if choice == '1':
-            type = parse_type(input("Choose an expense type: "))
-            arguments = [type]
-        elif choice == '2':
-            amount = parse_amount(input("Choose an amount: "))
-            arguments = [amount]
-        else:
-            raise_choice_error()
-        removed = command_filter(apartment_expense_data, arguments, changes_stack)
-        if removed == 0:
-            print("Nothing to remove")
-        else:
-            print(str(removed) + " expenses removed")
-        return True
-    except ValueError as value_error:
-        ui_handle_value_error(value_error)
-        return False
+    choice = ui_show_options(option_list)
+    arguments = []
+    if choice == '1':
+        type = parse_type(input("Choose an expense type: "))
+        arguments = [type]
+    elif choice == '2':
+        amount = parse_amount(input("Choose an amount: "))
+        arguments = [amount]
+    else:
+        raise_choice_error()
+    removed = command_filter(apartment_expense_data, arguments, changes_stack)
+    if removed == 0:
+        print("Nothing to remove")
+    else:
+        print(str(removed) + " expenses removed")
 
 
 def ui_undo(apartment_expense_data, changes_stack):
     arguments = []
-    try:
-        undone = command_undo(apartment_expense_data, arguments, changes_stack)
-        if undone:
-            print("Command undone")
-        else:
-            print("No more commands to undo")
-        return True
-    except ValueError as value_error:
-        ui_handle_value_error(value_error)
-        return False
+    undone = command_undo(apartment_expense_data, arguments, changes_stack)
+    if undone:
+        print("Command undone")
+    else:
+        print("No more commands to undo")
 
 
 def ui_credits(apartment_expense_data=None, changes_stack=None):
@@ -323,7 +279,9 @@ def ui_show_options(option_list):
     print("Valid choices:")
     for option in option_list:
         print(option)
-    return input("Your choice: ")
+    user_input = input("Your choice: ")
+    print()
+    return user_input
 
 
 def ui_handle_value_error(ve):
