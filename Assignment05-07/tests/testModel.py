@@ -17,6 +17,16 @@ class TestStudent(TestCase):
         assert student.getStudentId() == 1
         assert student.getName() == 'Alex'
         assert student.getGroup() == 6
+        assert str(student) == "Alex - 6"
+        student = Student(1, 'Alex')
+        assert student.getStudentId() == 1
+        assert student.getName() == 'Alex'
+        assert student.getGroup() is None
+        assert str(student) == "Alex"
+        studentCopy = Student.copyStudent(5, student)
+        assert studentCopy.getStudentId() == 5
+        assert studentCopy.getName() == 'Alex'
+        assert studentCopy.getGroup() is None
 
     def testUpdate(self):
         student = self.student
@@ -27,6 +37,7 @@ class TestStudent(TestCase):
 
     def testEquals(self):
         student = self.student
+        assert student == student
         assert student == Student(1, 'Alex', 6)
         assert student == Student(1, 'Other Name', 7)
         assert student != Student(2, 'Other Name', 7)
@@ -47,10 +58,12 @@ class TestGrade(TestCase):
 
     def testCreate(self):
         grade = self.grade
-        assert grade.getAssignmentId() == 1
-        assert grade.getStudentId() == 2
+        assert grade.getStudentId() == 1
+        assert grade.getAssignmentId() == 2
         assert grade.getGrade() == 10
         assert Grade(3, 4).getGrade() is None
+        assert str(grade) == "10"
+        assert str(Grade(3, 4)) == "No grade"
 
     def testUpdate(self):
         grade = Grade(1, 4)
@@ -60,6 +73,7 @@ class TestGrade(TestCase):
 
     def testEquals(self):
         grade = self.grade
+        assert grade == grade
         assert grade == Grade(1, 2, 10)
         assert grade == Grade(1, 2, 7)
         assert grade != Grade(1, 3, 7)
@@ -76,6 +90,7 @@ class TestAssignment(TestCase):
         assert assignment.getAssignmentId() == 1
         assert assignment.getDescription() == 'Project'
         assert assignment.getDeadline() == date(2018, 7, 11)
+        assert str(assignment) == "Project - 2018-07-11"
 
     def testUpdate(self):
         assignment = self.assignment
@@ -86,6 +101,7 @@ class TestAssignment(TestCase):
 
     def testEquals(self):
         assignment = self.assignment
+        assert assignment == assignment
         assert assignment == Assignment(1, 'Project', date(2018, 7, 11))
         assert assignment == Assignment(1, 'Other Project', date(2020, 5, 9))
         assert assignment != Assignment(3, 'Other Project', date(2020, 5, 9))

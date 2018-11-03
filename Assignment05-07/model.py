@@ -6,7 +6,7 @@ from datetime import date
 
 class Student:
 
-    def __init__(self, studentId: int, name: str, group: int):
+    def __init__(self, studentId: int, name: str, group: int = None):
         self.__studentId = studentId
         self.__name = name
         self.__group = group
@@ -27,7 +27,7 @@ class Student:
         self.__group = group
 
     def __str__(self):
-        return self.__name + " - " + str(self.__group)
+        return self.__name + ((" - " + str(self.__group)) if self.__group is not None else "")
 
     def __eq__(self, other):
         if id(self) == id(other):
@@ -36,11 +36,15 @@ class Student:
             return True
         return False
 
+    @staticmethod
+    def copyStudent(studentId, student):
+        return Student(studentId, student.__name, student.__group)
+
 
 class Grade:
-    def __init__(self, assignmentId: int, studentId: int, grade: int = None):
-        self.__assignmentId = assignmentId
+    def __init__(self, studentId: int, assignmentId: int, grade: int = None):
         self.__studentId = studentId
+        self.__assignmentId = assignmentId
         self.__grade = grade
 
     def getAssignmentId(self) -> int:
@@ -58,6 +62,8 @@ class Grade:
         self.__grade = grade
 
     def __str__(self):
+        if self.__grade is None:
+            return "No grade"
         return str(self.__grade)
 
     def __eq__(self, other):
@@ -99,6 +105,10 @@ class Assignment:
         if self.__assignmentId == other.__assignmentId:
             return True
         return False
+
+    @staticmethod
+    def copyAssignment(assignmentId, assignment):
+        return Assignment(assignmentId, assignment.__description, assignment.__deadline)
 
 
 class InvalidOperationException(Exception):
