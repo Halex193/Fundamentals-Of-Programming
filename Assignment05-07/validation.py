@@ -4,18 +4,41 @@ Validation module
 from model import *
 
 
+class CustomError(Exception):
+    pass
+
+
+class InvalidStudentId(CustomError):
+    pass
+
+
+class InvalidStudentName(CustomError):
+    pass
+
+
+class InvalidStudentGroup(CustomError):
+    pass
+
+
 class ValidationUtils:
+    class Student:
+        @staticmethod
+        def validateStudent(student: Student):
+            ValidationUtils.Student.validateId(student.getStudentId())
+            ValidationUtils.Student.validateName(student.getName())
+            ValidationUtils.Student.validateGroup(student.getGroup())
 
-    @staticmethod
-    def validStudent(student: Student):
-        studentId = student.getStudentId()
-        if type(studentId) is not int or studentId < 0:
-            return False
-        name = student.getName()
-        if type(name) is not str:
-            return False
-        group = student.getGroup()
-        if type(group) is not int or group < 0:
-            return False
-        return True
+        @staticmethod
+        def validateId(studentId):
+            if type(studentId) is not int or studentId < 0:
+                raise InvalidStudentId
 
+        @staticmethod
+        def validateName(name):
+            if type(name) is not str:
+                raise InvalidStudentName
+
+        @staticmethod
+        def validateGroup(group):
+            if type(group) is not int or group < 0:
+                raise InvalidStudentGroup

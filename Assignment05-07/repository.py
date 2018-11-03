@@ -4,12 +4,11 @@ This is the repository module
 from typing import Tuple, List
 
 from model import *
-from abc import ABC, abstractmethod
 
 
-class OnDeleteListener(ABC):
-    @abstractmethod
-    def onDelete(self, item):
+class OnDeleteListener:
+    # @abstractmethod
+    # def onDelete(self, item)
         pass
 
 
@@ -106,7 +105,7 @@ class GradeCollection:
 
     def assign(self, student: Student, assignment: Assignment) -> Grade:
         """
-        Assigns an assignment to a student
+        Give an assignment to a student
         :return: The new grade object that is stored in the list
         """
 
