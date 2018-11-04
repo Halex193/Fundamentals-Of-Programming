@@ -81,6 +81,9 @@ class StudentCollection:
             raise StopIteration
         while self.__currentId not in self.__students.keys():
             self.__currentId += 1
+            if self.__currentId >= self.__idSeed:
+                raise StopIteration
+
         student = self.__students[self.__currentId]
         self.__currentId += 1
         return student
@@ -168,6 +171,8 @@ class AssignmentCollection:
             raise StopIteration
         while self.__currentId not in self.__assignments.keys():
             self.__currentId += 1
+            if self.__currentId >= self.__idSeed:
+                raise StopIteration
         assignment = self.__assignments[self.__currentId]
         self.__currentId += 1
         return assignment

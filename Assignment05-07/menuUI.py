@@ -19,7 +19,10 @@ class MenuUI:
         errorTypes = {
             CustomError: "Invalid data",
             InvalidStudentId: "Student id is invalid",
-            InvalidStudentGroup: "Student group is invalid"
+            InvalidStudentGroup: "Student group is invalid",
+            InvalidAssignmentId: "Assignment id is invalid",
+            InvalidAssignmentDeadline: "Assignment deadline is invalid",
+            DuplicateAssignment: "Assignment was already given to student"
         }
         if type(error) in errorTypes:
             print(errorTypes[type(error)])
@@ -81,7 +84,7 @@ class MainMenu(Menu):
         ManageAssignmentsMenu(self.logicComponent).showMenu()
 
     def giveAssignments(self):
-        pass
+        AssignMenu(self.logicComponent).showMenu()
 
 
 class ManageStudentsMenu(Menu):
@@ -132,8 +135,17 @@ class ManageStudentsMenu(Menu):
             MenuUI.handleCustomError(error)
 
     def updateStudent(self):
-        pass
-    # TODO here we go
+        studentId = input("Student id: ")
+        try:
+            student = self.logicComponent.findStudent(studentId)
+            print("You are modifying the student with name " + student.getName() + " from group " + str(
+                student.getGroup()))
+            name = input("Student's new name: ")
+            group = input("Student's new group: ")
+            self.logicComponent.updateStudent(studentId, name, group)
+            print("Student information updated")
+        except CustomError as error:
+            MenuUI.handleCustomError(error)
 
 
 class ManageAssignmentsMenu(Menu):
@@ -157,16 +169,95 @@ class ManageAssignmentsMenu(Menu):
         }
 
     def listAssignments(self):
-        pass
+        assignmentList = self.logicComponent.listAssignments()
+        print("\nID - Description - Deadline")
+        for assignment in assignmentList:
+            print(self.assignmentToStr(assignment))
 
     def addAssignment(self):
-        pass
+        description = input("Assignment's description: ")
+        deadline = input("Assignment's deadline (format: day.month.year): ")
+        try:
+            self.logicComponent.addAssignment(description, deadline)
+            print("Assignment added")
+        except CustomError as error:
+            MenuUI.handleCustomError(error)
 
     def removeAssignment(self):
-        pass
+        assignmentId = input("Assignment id: ")
+        try:
+            self.logicComponent.removeAssignment(assignmentId)
+            print("Assignment removed")
+        except CustomError as error:
+            MenuUI.handleCustomError(error)
 
     def updateAssignment(self):
-        pass
+        assignmentId = input("Assignment id: ")
+        try:
+            assignment = self.logicComponent.findAssignment(assignmentId)
+            print(
+                "You are modifying the assignment with description '" + assignment.getDescription() +
+                "' and deadline " + ManageAssignmentsMenu.dateToStr(assignment.getDeadline()))
+            description = input("Assignment's new description: ")
+            deadline = input("Assignment's new deadline (format: day.month.year): ")
+            self.logicComponent.updateAssignment(assignmentId, description, deadline)
+            print("Assignment information updated")
+        except CustomError as error:
+            MenuUI.handleCustomError(error)
 
-    def giveAssignments(self):
-        pass
+    @staticmethod
+    def assignmentToStr(assignment: Assignment):
+        deadline = ManageAssignmentsMenu.dateToStr(assignment.getDeadline())
+        return str(
+            assignment.getAssignmentId()) + " - " + assignment.getDescription() + " - " + deadline
+
+    @staticmethod
+    def dateToStr(parameterDate: date):
+        return str(parameterDate.day) + "." + str(parameterDate.month) + "." + str(parameterDate.year)
+
+
+class AssignMenu(Menu):
+    menuName = "Give assignments"
+
+    def __init__(self, logicComponent: LogicComponent):
+        super().__init__(logicComponent)
+
+        self.optionList = [
+            "1. Give assignment to student",
+            "2. Give assignment to group of students",
+            Menu.exitKey + ". Exit"
+        ]
+        self.choiceList = {
+            '1': self.assignToStudent,
+            '2': self.assignToGroup
+        }
+
+    def assignToStudent(self):
+        try:
+            studentId = input("Choose student id: ")
+            student = self.logicComponent.findStudent(studentId)
+            print("You giving an assignment to the student with name " + student.getName() + " from group " + str(
+                student.getGroup()))
+            assignmentId = input("Choose assignment id: ")
+            assignment = self.logicComponent.findAssignment(assignmentId)
+            print(
+                "You are giving the assignment with description '" + assignment.getDescription() +
+                "' and deadline " + ManageAssignmentsMenu.dateToStr(assignment.getDeadline()))
+            self.logicComponent.assignToStudent(studentId, assignmentId)
+            print("Assignment was given")
+        except CustomError as error:
+            MenuUI.handleCustomError(error)
+
+    def assignToGroup(self):
+        try:
+            group = input("Choose group: ")
+            self.logicComponent.checkGroupExistence(group)
+            assignmentId = input("Choose assignment id: ")
+            assignment = self.logicComponent.findAssignment(assignmentId)
+            print(
+                "You are giving the assignment with description '" + assignment.getDescription() +
+                "' and deadline " + ManageAssignmentsMenu.dateToStr(assignment.getDeadline()))
+            self.logicComponent.assignToGroup(group, assignmentId)
+            print("Assignments were given")
+        except CustomError as error:
+            MenuUI.handleCustomError(error)
