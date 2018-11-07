@@ -69,12 +69,14 @@ class MainMenu(Menu):
             "1. Manage students",
             "2. Manage assignments",
             "3. Give assignments",
+            "4. Grade student",
             Menu.exitKey + ". Exit"
         ]
         self.choiceList = {
             '1': self.manageStudents,
             '2': self.manageAssignments,
-            '3': self.giveAssignments
+            '3': self.giveAssignments,
+            '4': self.gradeStudent
         }
 
     def manageStudents(self):
@@ -85,6 +87,10 @@ class MainMenu(Menu):
 
     def giveAssignments(self):
         AssignMenu(self.logicComponent).showMenu()
+
+    def gradeStudent(self):
+        studentId = input("Student id: ")
+        # TODO Grade student for given assignment
 
 
 class ManageStudentsMenu(Menu):
@@ -98,13 +104,15 @@ class ManageStudentsMenu(Menu):
             "2. Add student",
             "3. Remove student",
             "4. Update student",
+            "5. List student grades",
             Menu.exitKey + ". Back"
         ]
         self.choiceList = {
             '1': self.listStudents,
             '2': self.addStudent,
             '3': self.removeStudent,
-            '4': self.updateStudent
+            '4': self.updateStudent,
+            '5': self.listStudentGrades
         }
 
     def listStudents(self):
@@ -147,6 +155,25 @@ class ManageStudentsMenu(Menu):
         except CustomError as error:
             MenuUI.handleCustomError(error)
 
+    def listStudentGrades(self):
+        studentId = input("Student id: ")
+        try:
+            student = self.logicComponent.findStudent(studentId)
+            print(student.getName() + "'s grades are:")
+            gradeList = self.logicComponent.listStudentGrades(studentId)
+            if len(gradeList) == 0:
+                print("No grades to show")
+            else:
+                print("Grade - Assignment ID")
+                for grade in gradeList:
+                    print(self.gradeToStr(grade))
+        except CustomError as error:
+            MenuUI.handleCustomError(error)
+
+    @staticmethod
+    def gradeToStr(grade):
+        return str(grade) + " - " + str(grade.getAssignmentId())
+
 
 class ManageAssignmentsMenu(Menu):
     menuName = "Manage assignments"
@@ -159,13 +186,15 @@ class ManageAssignmentsMenu(Menu):
             "2. Add assignment",
             "3. Remove assignment",
             "4. Update assignment",
+            "5. List assignment grades",
             Menu.exitKey + ". Back"
         ]
         self.choiceList = {
             '1': self.listAssignments,
             '2': self.addAssignment,
             '3': self.removeAssignment,
-            '4': self.updateAssignment
+            '4': self.updateAssignment,
+            '5': self.listAssignmentGrades
         }
 
     def listAssignments(self):
@@ -214,6 +243,25 @@ class ManageAssignmentsMenu(Menu):
     @staticmethod
     def dateToStr(parameterDate: date):
         return str(parameterDate.day) + "." + str(parameterDate.month) + "." + str(parameterDate.year)
+
+    def listAssignmentGrades(self):
+        assignmentId = input("Assignment id: ")
+        try:
+            assignment = self.logicComponent.findAssignment(assignmentId)
+            print("List of grades for the assignment with description '" + assignment.getDescription() + ":")
+            gradeList = self.logicComponent.listAssignmentGrades(assignmentId)
+            if len(gradeList) == 0:
+                print("No grades to show")
+            else:
+                print("Grade - Student ID")
+                for grade in gradeList:
+                    print(self.gradeToStr(grade))
+        except CustomError as error:
+            MenuUI.handleCustomError(error)
+
+    @staticmethod
+    def gradeToStr(grade):
+        return str(grade) + " - " + str(grade.getStudentId())
 
 
 class AssignMenu(Menu):

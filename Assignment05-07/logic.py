@@ -208,6 +208,14 @@ class LogicComponent(ChangesHandler):
             except DuplicateAssignment:
                 pass
 
+    def listStudentGrades(self, studentId):
+        student = self.findStudent(studentId)
+        return self.__grades.getStudentGrades(student)
+
+    def listAssignmentGrades(self, assignmentId):
+        assignment = self.findAssignment(assignmentId)
+        return self.__grades.getAssignmentGrades(assignment)
+
 
 class ChangesStack:
     """
