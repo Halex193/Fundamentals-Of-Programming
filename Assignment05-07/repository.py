@@ -88,9 +88,9 @@ class StudentCollection:
         self.__currentId += 1
         return student
 
-    def __getitem__(self, item: int) -> Student:
-        if item in self.__students.keys():
-            return self.__students[item]
+    def __getitem__(self, key: int) -> Student:
+        if key in self.__students.keys():
+            return self.__students[key]
         return None
 
     def __delitem__(self, key: Student):
@@ -116,6 +116,7 @@ class GradeCollection:
         if key in self.__grades.keys():
             raise KeyError('Student was already assigned this assignment')
         newGrade = Grade(student.getStudentId(), assignment.getAssignmentId())
+        self.__grades[key] = newGrade
         self.__grades[key] = newGrade
         return newGrade
 

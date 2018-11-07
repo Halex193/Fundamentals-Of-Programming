@@ -33,16 +33,16 @@ class LogicComponent(ChangesHandler):
 
     def populateRepository(self):
         studentList = [
-            self.__students.addStudent(Student(0, 'Andrew', 1)),
-            self.__students.addStudent(Student(0, 'Richard', 1)),
-            self.__students.addStudent(Student(0, 'John', 5)),
-            self.__students.addStudent(Student(0, 'Michaela', 5))
+            self.__students.addStudent(Student(0, 'Andrew', 915)),
+            self.__students.addStudent(Student(0, 'Richard', 915)),
+            self.__students.addStudent(Student(0, 'John', 917)),
+            self.__students.addStudent(Student(0, 'Hori', 917))
         ]
         assignmentList = [
-            self.__assignments.addAssignment(Assignment(0, 'Project 1', date(2018, 9, 8))),
-            self.__assignments.addAssignment(Assignment(0, 'Project 2', date(2018, 10, 8))),
-            self.__assignments.addAssignment(Assignment(0, 'Project 3', date(2018, 11, 8))),
-            self.__assignments.addAssignment(Assignment(0, 'Project 4', date(2018, 12, 8)))
+            self.__assignments.addAssignment(Assignment(0, 'Assignment 01', date(2018, 10, 10))),
+            self.__assignments.addAssignment(Assignment(0, 'Assignment 02', date(2018, 10, 17))),
+            self.__assignments.addAssignment(Assignment(0, 'Assignment 03-04', date(2018, 10, 31))),
+            self.__assignments.addAssignment(Assignment(0, 'Assignment 05-07', date(2018, 11, 28)))
         ]
 
         self.__grades.assign(studentList[0], assignmentList[1])
@@ -55,6 +55,9 @@ class LogicComponent(ChangesHandler):
 
     # Manage Students menu
     def listStudents(self) -> List[Student]:
+        """
+        Returns a list of students sorted in ascending order by their IDs
+        """
         return sorted([student for student in self.__students], key=lambda student: student.getStudentId())
 
     def addStudent(self, name: str, group: str) -> Student:
