@@ -33,6 +33,9 @@ class InvalidAssignmentDeadline(CustomError):
 
 
 class ValidationUtils:
+    """
+    Provides means of validating program data
+    """
     class Student:
         @staticmethod
         def validateStudent(student: Student):

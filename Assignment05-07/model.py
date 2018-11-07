@@ -5,7 +5,9 @@ from datetime import date
 
 
 class Student:
-
+    """
+    Represents a student
+    """
     def __init__(self, studentId: int, name: str, group: int = None):
         self.__studentId = studentId
         self.__name = name
@@ -42,6 +44,9 @@ class Student:
 
 
 class Grade:
+    """
+    Represents a grade
+    """
     def __init__(self, studentId: int, assignmentId: int, grade: int = None):
         self.__studentId = studentId
         self.__assignmentId = assignmentId
@@ -75,7 +80,9 @@ class Grade:
 
 
 class Assignment:
-
+    """
+    Represents an assignment
+    """
     def __init__(self, assignmentId: int, description: str, deadline: date):
         self.__assignmentId = assignmentId
         self.__description = description

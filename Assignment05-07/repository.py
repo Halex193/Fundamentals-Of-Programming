@@ -7,12 +7,18 @@ from model import *
 
 
 class OnDeleteListener:
+    """
+    Super class for classes that listen to the delete trigger of Collection classes
+    """
     # @abstractmethod
     # def onDelete(self, item)
-        pass
+    pass
 
 
 class Repository(OnDeleteListener):
+    """
+    Holds all the program data
+    """
 
     def __init__(self):
         self.__students = StudentCollection(self)
@@ -51,6 +57,9 @@ class Repository(OnDeleteListener):
 
 
 class StudentCollection:
+    """
+    Holds the student objects and provides means of accessing and modifying them
+    """
     def __init__(self, onDeleteListener: OnDeleteListener = None):
         self.__students = {}
         self.__idSeed = 0
@@ -103,6 +112,9 @@ class StudentCollection:
 
 
 class GradeCollection:
+    """
+    Holds the grade objects and provides means of accessing and modifying them
+    """
     def __init__(self):
         self.__grades = {}
 
@@ -142,6 +154,9 @@ class GradeCollection:
 
 
 class AssignmentCollection:
+    """
+    Holds the assignment objects and provides means of accessing and modifying them
+    """
     def __init__(self, onDeleteListener: OnDeleteListener = None):
         self.__assignments = {}
         self.__idSeed = 0

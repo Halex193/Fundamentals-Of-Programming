@@ -19,6 +19,9 @@ class DuplicateAssignment(CustomError):
 
 
 class LogicComponent(ChangesHandler):
+    """
+    Provides all the logic functions of the software
+    """
 
     def __init__(self, repository: Repository):
         self.__repository = repository
@@ -32,6 +35,9 @@ class LogicComponent(ChangesHandler):
         pass
 
     def populateRepository(self):
+        """
+        Adds default data to the repository
+        """
         studentList = [
             self.__students.addStudent(Student(0, 'Andrew', 915)),
             self.__students.addStudent(Student(0, 'Richard', 915)),
@@ -61,6 +67,9 @@ class LogicComponent(ChangesHandler):
         return sorted([student for student in self.__students], key=lambda student: student.getStudentId())
 
     def addStudent(self, name: str, group: str) -> Student:
+        """
+        Adds a student to the repository
+        """
         group = self.parseInt(group, InvalidStudentGroup)
         student = Student(0, name, group)
         ValidationUtils.Student.validateStudent(student)
@@ -68,17 +77,26 @@ class LogicComponent(ChangesHandler):
 
     @staticmethod
     def parseInt(string: str, errorType: type) -> int:
+        """
+        Parses a number to an integer. If the conversion fails, raises the specified exception
+        """
         try:
             return int(string)
         except ValueError:
             raise errorType()
 
     def removeStudent(self, studentId: str):
+        """
+        Removes a student from the repository
+        """
         studentId = self.parseInt(studentId, InvalidStudentId)
         student = self.findStudent(studentId)
         del self.__students[student]
 
     def findStudent(self, studentId) -> Student:
+        """
+        Searches a student and returns it if found. Raises InvalidStudentId if not
+        """
         studentId = self.parseInt(studentId, InvalidStudentId)
         if studentId not in [student.getStudentId() for student in self.__students]:
             raise InvalidStudentId
@@ -86,6 +104,9 @@ class LogicComponent(ChangesHandler):
             return self.__students[studentId]
 
     def updateStudent(self, studentId, name: str, group: str):
+        """
+        Updates the student data
+        """
         studentId = self.parseInt(studentId, InvalidStudentId)
         group = self.parseInt(group, InvalidStudentGroup)
         ValidationUtils.Student.validateStudent(Student(0, name, group))
@@ -95,10 +116,16 @@ class LogicComponent(ChangesHandler):
 
     # Manage Assignments Menu
     def listAssignments(self) -> List[Assignment]:
+        """
+        Returns a list of assignments sorted in ascending order by their IDs
+        """
         return sorted([assignment for assignment in self.__assignments],
                       key=lambda assignment: assignment.getAssignmentId())
 
     def addAssignment(self, description: str, deadline: str) -> Assignment:
+        """
+        Adds a assignment to the repository
+        """
         deadline = self.parseDate(deadline, InvalidAssignmentDeadline)
         assignment = Assignment(0, description, deadline)
         ValidationUtils.Assignment.validateAssignment(assignment)
@@ -106,6 +133,9 @@ class LogicComponent(ChangesHandler):
 
     @staticmethod
     def parseDate(string: str, errorType: type) -> date:
+        """
+        Parses a string to a date. Valid format: day.month.year . If the conversion fails, raises the specified exception
+        """
         try:
             symbols = string.split('.')
             if len(symbols) != 3:
@@ -118,11 +148,17 @@ class LogicComponent(ChangesHandler):
             raise errorType()
 
     def removeAssignment(self, assignmentId: str):
+        """
+        Removes an assignment from the repository
+        """
         assignmentId = self.parseInt(assignmentId, InvalidAssignmentId)
         assignment = self.findAssignment(assignmentId)
         del self.__assignments[assignment]
 
     def findAssignment(self, assignmentId) -> Assignment:
+        """
+        Searches an assignment and returns it if found. Raises InvalidAssignmentId otherwise
+        """
         assignmentId = self.parseInt(assignmentId, InvalidAssignmentId)
         if assignmentId not in [assignment.getAssignmentId() for assignment in self.__assignments]:
             raise InvalidAssignmentId
@@ -130,6 +166,9 @@ class LogicComponent(ChangesHandler):
             return self.__assignments[assignmentId]
 
     def updateAssignment(self, assignmentId, description: str, deadline: str):
+        """
+        Updates the assignment data
+        """
         assignmentId = self.parseInt(assignmentId, InvalidAssignmentId)
         deadline = self.parseDate(deadline, InvalidAssignmentDeadline)
         ValidationUtils.Assignment.validateAssignment(Assignment(0, description, deadline))
@@ -139,6 +178,9 @@ class LogicComponent(ChangesHandler):
 
     # Give assignments menu
     def assignToStudent(self, studentId, assignmentId):
+        """
+        Gives an assignment to a student
+        """
         student = self.findStudent(studentId)
         assignment = self.findAssignment(assignmentId)
         try:
@@ -147,11 +189,17 @@ class LogicComponent(ChangesHandler):
             raise DuplicateAssignment
 
     def checkGroupExistence(self, group: str):
+        """
+        Checks if there are any students within the specified group
+        """
         group = self.parseInt(group, InvalidStudentGroup)
         if group not in [student.getGroup() for student in self.__students]:
             raise InvalidStudentGroup
 
     def assignToGroup(self, group: str, assignmentId: str):
+        """
+        Gives an assignment to the specified group
+        """
         group = self.parseInt(group, InvalidStudentGroup)
         groupStudents = [student for student in self.__students if student.getGroup() == group]
         for student in groupStudents:
@@ -162,6 +210,9 @@ class LogicComponent(ChangesHandler):
 
 
 class ChangesStack:
+    """
+    The stack of changes committed to the repository
+    """
 
     def __init__(self, changesHandler):
         self.__changesStack = []
