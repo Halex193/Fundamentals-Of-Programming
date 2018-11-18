@@ -1,15 +1,19 @@
-from datetime import date
+from typing import List
 from unittest import TestCase
 from repository import Repository
 from logic import LogicComponent
-from validation import InvalidStudentGroup, InvalidAssignmentDeadline
+from validation import *
 
 
 class TestLogicComponent(TestCase):
 
     def setUp(self):
-        self.repository = Repository()
-        self.logicComponent = LogicComponent(self.repository)
+        self.repository: Repository = Repository()
+        self.logicComponent: LogicComponent = LogicComponent(self.repository, date(2018, 11, 18))
+
+    def tearDown(self):
+        self.repository = None
+        self.logicComponent = None
 
     def test_handleChanges(self):
         pass
@@ -17,9 +21,7 @@ class TestLogicComponent(TestCase):
     def test_populateRepository(self):
         self.logicComponent.populateRepository()
         self.assertTrue(len(self.logicComponent.listStudents()) != 0)
-        # self.assertTrue(len(self.logicComponent.listAssignments()) != 0)
-        repository = Repository()
-        self.logicComponent = LogicComponent(repository)
+        self.assertTrue(len(self.logicComponent.listAssignments()) != 0)
 
     def testAddStudent(self):
         student = self.logicComponent.addStudent('Ricky', '7')
@@ -44,6 +46,8 @@ class TestLogicComponent(TestCase):
         studentId = student.getStudentId()
         self.assertTrue(self.logicComponent.findStudent(studentId).getName() == 'Ricky')
         self.assertTrue(self.logicComponent.findStudent(studentId).getGroup() == 7)
+        with self.assertRaises(InvalidStudentId):
+            self.logicComponent.findStudent('-1')
 
     def testUpdateStudent(self):
         student = self.logicComponent.addStudent('Ricky', '7')
@@ -51,6 +55,19 @@ class TestLogicComponent(TestCase):
         self.logicComponent.updateStudent(studentId, 'Andy', '11')
         self.assertTrue(self.logicComponent.findStudent(studentId).getName() == 'Andy')
         self.assertTrue(self.logicComponent.findStudent(studentId).getGroup() == 11)
+
+    def testListStudentGrades(self):
+        student1 = self.logicComponent.addStudent('Ricky', '7')
+        student1Id = student1.getStudentId()
+        assignment1 = self.logicComponent.addAssignment('Project1', '2.10.2018')
+        assignment1Id = assignment1.getAssignmentId()
+        grade1 = self.logicComponent.assignToStudent(student1Id, assignment1Id)
+        assignment2 = self.logicComponent.addAssignment('Project2', '3.10.2018')
+        assignment2Id = assignment2.getAssignmentId()
+        grade2 = self.logicComponent.assignToStudent(student1Id, assignment2Id)
+        gradeList = self.logicComponent.listStudentGrades(student1Id)
+        self.assertTrue(grade1 in gradeList)
+        self.assertTrue(grade2 in gradeList)
 
     def testAddAssignment(self):
         assignment = self.logicComponent.addAssignment('Project', '2.10.2018')
@@ -63,6 +80,8 @@ class TestLogicComponent(TestCase):
         self.assertTrue(self.logicComponent.parseDate('2.10.2018', TypeError) == date(2018, 10, 2))
         with self.assertRaises(TypeError):
             self.logicComponent.parseDate('8', TypeError)
+        with self.assertRaises(TypeError):
+            self.logicComponent.parseDate('8.-7.432', TypeError)
 
     def testRemoveAssignment(self):
         oldLength = len(self.logicComponent.listAssignments())
@@ -75,6 +94,8 @@ class TestLogicComponent(TestCase):
         assignmentId = assignment.getAssignmentId()
         self.assertTrue(self.logicComponent.findAssignment(assignmentId).getDescription() == 'Project')
         self.assertTrue(self.logicComponent.findAssignment(assignmentId).getDeadline() == date(2018, 10, 2))
+        with self.assertRaises(InvalidAssignmentId):
+            self.logicComponent.findAssignment('-1')
 
     def testUpdateAssignment(self):
         assignment = self.logicComponent.addAssignment('Project', '2.10.2018')
@@ -82,6 +103,19 @@ class TestLogicComponent(TestCase):
         self.logicComponent.updateAssignment(assignmentId, 'Project 2', '2.11.2018')
         self.assertTrue(self.logicComponent.findAssignment(assignmentId).getDescription() == 'Project 2')
         self.assertTrue(self.logicComponent.findAssignment(assignmentId).getDeadline() == date(2018, 11, 2))
+
+    def testListAssignmentGrades(self):
+        student1 = self.logicComponent.addStudent('Ricky', '7')
+        student1Id = student1.getStudentId()
+        student2 = self.logicComponent.addStudent('Michael', '8')
+        student2Id = student2.getStudentId()
+        assignment1 = self.logicComponent.addAssignment('Project1', '2.10.2018')
+        assignment1Id = assignment1.getAssignmentId()
+        grade1 = self.logicComponent.assignToStudent(student1Id, assignment1Id)
+        grade2 = self.logicComponent.assignToStudent(student2Id, assignment1Id)
+        gradeList = self.logicComponent.listAssignmentGrades(assignment1Id)
+        self.assertTrue(grade1 in gradeList)
+        self.assertTrue(grade2 in gradeList)
 
     def testAssignToStudent(self):
         student = self.logicComponent.addStudent('Ricky', '7')
@@ -95,8 +129,8 @@ class TestLogicComponent(TestCase):
 
     def testCheckGroupExistence(self):
         group = 0
-        while group in [student.getGroup() for student in self.repository.getStudents()]:
-            group += 1
+        # while group in [student.getGroup() for student in self.repository.getStudents()]:
+        #     group += 1
         self.logicComponent.addStudent('Ricky', group)
         self.logicComponent.checkGroupExistence(group)
         while group in [student.getGroup() for student in self.repository.getStudents()]:
@@ -106,8 +140,8 @@ class TestLogicComponent(TestCase):
 
     def testAssignToGroup(self):
         group = 0
-        while group in [student.getGroup() for student in self.repository.getStudents()]:
-            group += 1
+        # while group in [student.getGroup() for student in self.repository.getStudents()]:
+        #     group += 1
         student1 = self.logicComponent.addStudent('Ricky', group)
         student2 = self.logicComponent.addStudent('Alfred', group)
         student3 = self.logicComponent.addStudent('Alex', group)
@@ -117,3 +151,110 @@ class TestLogicComponent(TestCase):
         self.assertTrue(self.repository.getGrades()[student1.getStudentId(), assignment.getAssignmentId()] is not None)
         self.assertTrue(self.repository.getGrades()[student2.getStudentId(), assignment.getAssignmentId()] is not None)
         self.assertTrue(self.repository.getGrades()[student3.getStudentId(), assignment.getAssignmentId()] is not None)
+
+    def testGrade(self):
+        student1 = self.logicComponent.addStudent('Ricky', '7')
+        student1Id = student1.getStudentId()
+        assignment1 = self.logicComponent.addAssignment('Project1', '2.10.2018')
+        assignment1Id = assignment1.getAssignmentId()
+        with self.assertRaises(InvalidAssignmentId):
+            self.logicComponent.grade(student1Id, assignment1Id, '1')
+        grade = self.logicComponent.assignToStudent(student1Id, assignment1Id)
+        with self.assertRaises(InvalidGrade):
+            self.logicComponent.grade(student1Id, assignment1Id, '-1')
+        with self.assertRaises(InvalidAssignmentId):
+            self.logicComponent.grade(student1Id, '-1', '1')
+        self.logicComponent.grade(student1Id, assignment1Id, '10')
+        self.assertEqual(grade.getGrade(), 10)
+        with self.assertRaises(InvalidAssignmentId):
+            self.logicComponent.grade(student1Id, assignment1Id, '1')
+
+    def testGetStudentUngradedAssignments(self):
+        student1 = self.logicComponent.addStudent('Ricky', '7')
+        student1Id = student1.getStudentId()
+        assignment1 = self.logicComponent.addAssignment('Project1', '2.10.2018')
+        assignment1Id = assignment1.getAssignmentId()
+        assignment2 = self.logicComponent.addAssignment('Project2', '3.10.2018')
+        assignment2Id = assignment2.getAssignmentId()
+        grade1 = self.logicComponent.assignToStudent(student1Id, assignment1Id)
+        grade2 = self.logicComponent.assignToStudent(student1Id, assignment2Id)
+        self.logicComponent.grade(student1Id, assignment1Id, '7')
+        assignmentList = self.logicComponent.getStudentUngradedAssignments(student1Id)
+        self.assertTrue(assignment2 in assignmentList)
+
+    def testAssignmentGradable(self):
+        student1 = self.logicComponent.addStudent('Ricky', '7')
+        student1Id = student1.getStudentId()
+        assignment1 = self.logicComponent.addAssignment('Project1', '2.10.2018')
+        assignment1Id = assignment1.getAssignmentId()
+        with self.assertRaises(InvalidAssignmentId):
+            self.logicComponent.assignmentGradable(student1Id, assignment1Id)
+        self.logicComponent.assignToStudent(student1Id, assignment1Id)
+        self.logicComponent.assignmentGradable(student1Id, assignment1Id)
+        self.logicComponent.grade(student1Id, assignment1Id, '9')
+        with self.assertRaises(InvalidAssignmentId):
+            self.logicComponent.assignmentGradable(student1Id, assignment1Id)
+
+    def populateRepository(self):
+        studentList: List[Student] = [
+            self.logicComponent.addStudent('Andrew', 915),
+            self.logicComponent.addStudent('Richard', 915),
+            self.logicComponent.addStudent('John', 917),
+            self.logicComponent.addStudent('Hori', 917)
+        ]
+        assignmentList: List[Assignment] = [
+            self.logicComponent.addAssignment('Assignment 01', "10.10.2018"),
+            self.logicComponent.addAssignment('Assignment 02', "17.10.2018"),
+            self.logicComponent.addAssignment('Assignment 03-04', "31.10.2018"),
+            self.logicComponent.addAssignment('Assignment 05-07', "28.11.2018")
+        ]
+
+        self.logicComponent.assignToStudent(studentList[0].getStudentId(),
+                                            assignmentList[1].getAssignmentId()).setGrade(10)
+        self.logicComponent.assignToStudent(studentList[0].getStudentId(), assignmentList[3].getAssignmentId())
+        self.logicComponent.assignToStudent(studentList[1].getStudentId(),
+                                            assignmentList[1].getAssignmentId()).setGrade(5)
+        self.logicComponent.assignToStudent(studentList[1].getStudentId(),
+                                            assignmentList[2].getAssignmentId()).setGrade(4)
+        self.logicComponent.assignToStudent(studentList[2].getStudentId(), assignmentList[2].getAssignmentId())
+        self.logicComponent.assignToStudent(studentList[2].getStudentId(),
+                                            assignmentList[3].getAssignmentId()).setGrade(9)
+        self.logicComponent.assignToStudent(studentList[3].getStudentId(), assignmentList[1].getAssignmentId())
+
+    def testGetStudentsForAssignmentSortedAlphabetically(self):
+        self.populateRepository()
+        student = self.logicComponent.findStudent
+        output = [student(0), student(3), student(1)]
+        self.assertEqual(output, self.logicComponent.getStudentsForAssignmentSortedAlphabetically('1'))
+
+    def testGetStudentsForAssignmentSortedByGrade(self):
+        self.populateRepository()
+        student = self.logicComponent.findStudent
+        output = [student(0), student(1), student(3)]
+        self.assertEqual(output, self.logicComponent.getStudentsForAssignmentSortedByGrade('1'))
+
+    def testGetStudentsSortedByAverage(self):
+        self.populateRepository()
+        student = self.logicComponent.findStudent
+        output = [(student(0), 10), (student(2), 9), (student(1), 4.5), (student(3), 0)]
+        self.assertEqual(output, self.logicComponent.getStudentsSortedByAverage())
+
+    def testGetAssignmentsSortedByAverage(self):
+        self.populateRepository()
+        assignment = self.logicComponent.findAssignment
+        output = [(assignment(3), 9), (assignment(1), 7.5), (assignment(2), 4)]
+        self.assertEqual(output, self.logicComponent.getAssignmentsSortedByAverage())
+
+    def testGetGrade(self):
+        student1 = self.logicComponent.addStudent('Ricky', '7')
+        student1Id = student1.getStudentId()
+        assignment1 = self.logicComponent.addAssignment('Project1', '2.10.2018')
+        assignment1Id = assignment1.getAssignmentId()
+        grade = self.logicComponent.assignToStudent(student1Id, assignment1Id)
+        self.assertEqual(grade, self.logicComponent.getGrade(student1Id, assignment1Id))
+
+    def testLateStudents(self):
+        self.populateRepository()
+        student = self.logicComponent.findStudent
+        output = [student(2), student(3)]
+        self.assertEqual(output, self.logicComponent.lateStudents())

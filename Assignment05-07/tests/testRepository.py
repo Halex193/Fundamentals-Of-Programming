@@ -11,6 +11,12 @@ class TestRepository(TestCase):
         self.grades = self.repository.getGrades()
         self.assignments = self.repository.getAssignments()
 
+    def tearDown(self):
+        self.repository = None
+        self.students = None
+        self.grades = None
+        self.assignments = None
+
     def testCreate(self):
         self.assertTrue(self.students is not None)
         self.assertTrue(self.grades is not None)
@@ -52,6 +58,9 @@ class TestStudentCollection(TestCase):
         self.students.addStudent(Student(0, 'Richard', 4))
         self.students.addStudent(Student(0, 'Paul'))
 
+    def tearDown(self):
+        self.students = None
+
     def testCRUD(self):
         self.assertTrue(len(self.students) == 4)
         robert: Student = None
@@ -74,6 +83,7 @@ class TestStudentCollection(TestCase):
         self.assertTrue(richard not in self.students)
         with self.assertRaises(KeyError):
             del self.students[robert]
+        with self.assertRaises(KeyError):
             del self.students[richard]
 
 
@@ -85,6 +95,13 @@ class TestGradeCollection(TestCase):
         self.student2 = Student(2, 'Ana')
         self.assignment1 = Assignment(2, 'Project 1', date(2018, 7, 6))
         self.assignment2 = Assignment(3, 'Project 2', date(2018, 6, 6))
+
+    def tearDown(self):
+        self.grades = None
+        self.student1 = None
+        self.student2 = None
+        self.assignment1 = None
+        self.assignment2 = None
 
     def testCRUD(self):
         self.grades.assign(self.student1, self.assignment1)
@@ -130,6 +147,9 @@ class TestAssignmentCollection(TestCase):
         self.assignments.addAssignment(Assignment(0, 'Project 3', date(2018, 11, 7)))
         self.assignments.addAssignment(Assignment(0, 'Project 4', date(2018, 12, 9)))
 
+    def tearDown(self):
+        self.assignments = None
+
     def testCRUD(self):
         self.assertTrue(len(self.assignments) == 4)
         assignment2: Assignment = None
@@ -152,4 +172,5 @@ class TestAssignmentCollection(TestCase):
         self.assertTrue(assignment3 not in self.assignments)
         with self.assertRaises(KeyError):
             del self.assignments[assignment2]
+        with self.assertRaises(KeyError):
             del self.assignments[assignment3]

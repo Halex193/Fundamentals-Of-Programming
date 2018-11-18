@@ -31,13 +31,16 @@ class InvalidAssignmentDescription(CustomError):
 class InvalidAssignmentDeadline(CustomError):
     pass
 
+
 class InvalidGrade(CustomError):
     pass
+
 
 class ValidationUtils:
     """
     Provides means of validating program data
     """
+
     class Student:
         @staticmethod
         def validateStudent(student: Student):

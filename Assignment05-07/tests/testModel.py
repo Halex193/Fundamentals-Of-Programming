@@ -12,6 +12,9 @@ class TestStudent(TestCase):
     def setUp(self):
         self.student = Student(1, 'Alex', 6)
 
+    def tearDown(self):
+        self.student = None
+
     def testCreate(self):
         student = self.student
         self.assertTrue(student.getStudentId() == 1)
@@ -42,19 +45,27 @@ class TestStudent(TestCase):
         self.assertTrue(student == Student(1, 'Other Name', 7))
         self.assertTrue(student != Student(2, 'Other Name', 7))
 
-    # def testValidation(self):
-    #     self.assertTrue(ValidationUtils.validateStudent(self.student))
-    #     self.assertTrue(not ValidationUtils.validateStudent(Student(-3, 'Name', 8)))
-    #     self.assertTrue(not ValidationUtils.validateStudent(Student('str', 'Name', 8)))
-    #     self.assertTrue(not ValidationUtils.validateStudent(Student(3, 8, 8)))
-    #     self.assertTrue(not ValidationUtils.validateStudent(Student(3, 'Name', -8)))
-    #     self.assertTrue(not ValidationUtils.validateStudent(Student(3, 'Name', 'str')))
+    def testValidation(self):
+        ValidationUtils.Student.validateStudent(self.student)
+        with self.assertRaises(InvalidStudentId):
+            ValidationUtils.Student.validateStudent(Student(-3, 'Name', 8))
+        with self.assertRaises(InvalidStudentId):
+            ValidationUtils.Student.validateStudent(Student('str', 'Name', 8))
+        with self.assertRaises(InvalidStudentName):
+            ValidationUtils.Student.validateStudent(Student(3, 8, 8))
+        with self.assertRaises(InvalidStudentGroup):
+            ValidationUtils.Student.validateStudent(Student(3, 'Name', -8))
+        with self.assertRaises(InvalidStudentGroup):
+            ValidationUtils.Student.validateStudent(Student(3, 'Name', 'str'))
 
 
 class TestGrade(TestCase):
 
     def setUp(self):
         self.grade = Grade(1, 2, 10)
+
+    def tearDown(self):
+        self.grade = None
 
     def testCreate(self):
         grade = self.grade
@@ -86,6 +97,9 @@ class TestAssignment(TestCase):
     def setUp(self):
         self.assignment = Assignment(1, 'Project', date(2018, 7, 11))
 
+    def tearDown(self):
+        self.assignment = None
+
     def testCreate(self):
         assignment = self.assignment
         self.assertTrue(assignment.getAssignmentId() == 1)
@@ -106,3 +120,17 @@ class TestAssignment(TestCase):
         self.assertTrue(assignment == Assignment(1, 'Project', date(2018, 7, 11)))
         self.assertTrue(assignment == Assignment(1, 'Other Project', date(2020, 5, 9)))
         self.assertTrue(assignment != Assignment(3, 'Other Project', date(2020, 5, 9)))
+
+    def testValidation(self):
+        ValidationUtils.Assignment.validateAssignment(self.assignment)
+        sampleDate = date(2018, 7, 8)
+        with self.assertRaises(InvalidAssignmentId):
+            ValidationUtils.Assignment.validateAssignment(Assignment(-3, 'Desc', sampleDate))
+        with self.assertRaises(InvalidAssignmentId):
+            ValidationUtils.Assignment.validateAssignment(Assignment('str', 'Desc', sampleDate))
+        with self.assertRaises(InvalidAssignmentDescription):
+            ValidationUtils.Assignment.validateAssignment(Assignment(3, 8, sampleDate))
+        with self.assertRaises(InvalidAssignmentDeadline):
+            ValidationUtils.Assignment.validateAssignment(Assignment(3, 'Desc', -8))
+        with self.assertRaises(InvalidAssignmentDeadline):
+            ValidationUtils.Assignment.validateAssignment(Assignment(3, 'Desc', 'str'))

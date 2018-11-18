@@ -316,15 +316,17 @@ class StatisticsMenu(Menu):
         self.optionList = [
             "1. Students with specified assignment, ordered alphabetically",
             "2. Students with specified assignment, ordered by grade",
-            "3. Students sorted descending by average grade",
-            "4. Assignments sorted descending by average grade",
+            "3. Late students",
+            "4. Students sorted descending by average grade",
+            "5. Assignments sorted descending by average grade",
             Menu.exitKey + ". Back"
         ]
         self.choiceList = {
             '1': self.studentsSortedAlphabetically,
             '2': self.studentsSortedByGrade,
-            '3': self.studentsSortedByAverage,
-            '4': self.assignmentsSortedByAverage
+            '3': self.lateStudents,
+            '4': self.studentsSortedByAverage,
+            '5': self.assignmentsSortedByAverage
         }
 
     def studentsSortedAlphabetically(self):
@@ -377,3 +379,12 @@ class StatisticsMenu(Menu):
         print("\nID - Description - Deadline - Average Grade")
         for pair in resultList:
             print(ManageAssignmentsMenu.assignmentToStr(pair[0]) + " - " + str(pair[1]))
+
+    def lateStudents(self):
+        studentList = self.logicComponent.lateStudents()
+        if len(studentList) == 0:
+            print("No students are late with their assignments")
+            return
+        print("\nID - Name - Group")
+        for student in studentList:
+            print(ManageStudentsMenu.studentToStr(student))

@@ -8,7 +8,10 @@ from menuUI import *
 
 def run():
     repository = Repository()
-    logicComponent = LogicComponent(repository)
+    now = datetime.now()
+    currentDate = date(now.year, now.month, now.day)
+    logicComponent = LogicComponent(repository, currentDate)
+    logicComponent.populateRepository()
     menuUI = MenuUI(logicComponent)
     menuUI.run()
 

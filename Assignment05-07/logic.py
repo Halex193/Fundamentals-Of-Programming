@@ -1,9 +1,9 @@
 """
 This is the logic module
 """
+from datetime import datetime
 
 from repository import *
-from model import *
 from validation import *
 from typing import *
 
@@ -23,13 +23,13 @@ class LogicComponent(ChangesHandler):
     Provides all the logic functions of the software
     """
 
-    def __init__(self, repository: Repository):
+    def __init__(self, repository: Repository, currentDate: date):
         self.__repository = repository
         self.__students: StudentCollection = repository.getStudents()
         self.__grades: GradeCollection = repository.getGrades()
         self.__assignments: AssignmentCollection = repository.getAssignments()
         self.__changesStack: ChangesStack = ChangesStack(self)
-        self.populateRepository()
+        self.currentDate = currentDate
 
     def handleChanges(self, changes):
         pass
@@ -177,14 +177,14 @@ class LogicComponent(ChangesHandler):
         assignment.setDeadline(deadline)
 
     # Give assignments menu
-    def assignToStudent(self, studentId, assignmentId):
+    def assignToStudent(self, studentId, assignmentId) -> Grade:
         """
         Gives an assignment to a student
         """
         student = self.findStudent(studentId)
         assignment = self.findAssignment(assignmentId)
         try:
-            self.__grades.assign(student, assignment)
+            return self.__grades.assign(student, assignment)
         except KeyError:
             raise DuplicateAssignment
 
@@ -209,47 +209,76 @@ class LogicComponent(ChangesHandler):
                 pass
 
     def listStudentGrades(self, studentId) -> List[Grade]:
+        """
+        Lists all the grades for the student with the given ID
+        """
         student = self.findStudent(studentId)
         return self.__grades.getStudentGrades(student)
 
     def listAssignmentGrades(self, assignmentId) -> List[Grade]:
+        """
+        Lists all the grades for the assignment with the given ID
+        """
         assignment = self.findAssignment(assignmentId)
         return self.__grades.getAssignmentGrades(assignment)
 
-    def getStudentUngradedAssignments(self, studentId) -> List[Assignment]:
-        student = self.findStudent(studentId)
-        studentGrades = self.__grades.getStudentGrades(student)
-        studentNoneGrades = [grade for grade in studentGrades if grade.getGrade() is None]
-        return [self.findAssignment(grade.getAssignmentId()) for grade in studentNoneGrades]
-
     def grade(self, studentId: str, assignmentId: str, grade: str):
-
+        """
+        Grades the student at the given assignment
+        :param studentId: The ID of the student
+        :param assignmentId: The ID of the assignment
+        :param grade: THe grade of the assignment, an integer between 1 and 10
+        :raises InvalidGrade: If an invalid grade is given
+        :raises InvalidAssignmentId: If the student has not been given the assignment
+        """
         self.findStudent(studentId)
         self.findAssignment(assignmentId)
         grade = self.parseInt(grade, InvalidGrade)
-        if grade < 0 or grade > 10:
+        if grade < 1 or grade > 10:
             raise InvalidGrade
         gradeObject = self.findGrade(studentId, assignmentId)
         if gradeObject is None or gradeObject.getGrade() is not None:
             raise InvalidAssignmentId
         gradeObject.setGrade(grade)
 
+    def getStudentUngradedAssignments(self, studentId) -> List[Assignment]:
+        """
+        Lists the ungraded assignments for the student with the given ID
+        """
+        student = self.findStudent(studentId)
+        studentGrades = self.__grades.getStudentGrades(student)
+        studentNoneGrades = [grade for grade in studentGrades if grade.getGrade() is None]
+        return [self.findAssignment(grade.getAssignmentId()) for grade in studentNoneGrades]
+
     def assignmentGradable(self, studentId: str, assignmentId: str):
+        """
+        Checks if the assignment for a student is gradable
+        :raises InvalidAssignmentId: If the assignment is not gradable
+        """
         gradeObject = self.findGrade(studentId, assignmentId)
         if gradeObject is None or gradeObject.getGrade() is not None:
             raise InvalidAssignmentId
 
     def findGrade(self, studentId: str, assignmentId: str) -> Grade:
+        """
+        Finds and returns the grade of a student for a given assignment
+        """
         studentId = self.parseInt(studentId, InvalidStudentId)
         assignmentId = self.parseInt(assignmentId, InvalidAssignmentId)
         return self.__grades[studentId, assignmentId]
 
     def getStudentsForAssignmentSortedAlphabetically(self, assignmentId) -> List[Student]:
+        """
+        Returns a list of all students who received a given assignment, ordered alphabetically
+        """
         grades = self.listAssignmentGrades(assignmentId)
         students = [self.findStudent(grade.getStudentId()) for grade in grades]
         return sorted(students, key=lambda student: student.getName())
 
     def getStudentsForAssignmentSortedByGrade(self, assignmentId) -> List[Student]:
+        """
+        Returns a list of all students who received a given assignment, ordered by the grade for that assignment
+        """
         grades = self.listAssignmentGrades(assignmentId)
         noneGrades = [grade for grade in grades if grade.getGrade() is None]
         givenGrades = [grade for grade in grades if grade.getGrade() is not None]
@@ -258,6 +287,10 @@ class LogicComponent(ChangesHandler):
         return students
 
     def getStudentsSortedByAverage(self) -> List[Tuple[Student, float]]:
+        """
+        Returns a list of tuples with the students and their average grades,
+        sorted in descending order of the average grade received for all assignments.
+        """
         studentList = []
         students = self.__students
         for student in students:
@@ -272,6 +305,10 @@ class LogicComponent(ChangesHandler):
         return sorted(studentList, key=lambda pair: pair[1], reverse=True)
 
     def getAssignmentsSortedByAverage(self) -> List[Tuple[Assignment, float]]:
+        """
+        Return a list of tuples consisting of all assignments and their average grades for which there is at least one
+        grade, sorted in descending order of the average grade received by all students who received that assignment.
+        """
         assignmentList = []
         assignments = self.__assignments
         for assignment in assignments:
@@ -290,6 +327,20 @@ class LogicComponent(ChangesHandler):
         student = self.findStudent(studentId)
         assignment = self.findAssignment(assignmentId)
         return self.__grades[student.getStudentId(), assignment.getAssignmentId()]
+
+    def lateStudents(self) -> List[Student]:
+        """
+        Returns a list with all students who are late in handing in at least one assignment.
+        These are all the students who have an ungraded assignment for which the deadline has passed.
+        """
+        studentList = []
+        for student in self.listStudents():
+            ungradedAssignments = self.getStudentUngradedAssignments(student.getStudentId())
+            for assignment in ungradedAssignments:
+                if self.currentDate > assignment.getDeadline():
+                    studentList.append(student)
+                    break
+        return studentList
 
 
 class ChangesStack:
