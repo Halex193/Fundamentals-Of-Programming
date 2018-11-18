@@ -3,7 +3,6 @@ This is the menu UI module
 """
 
 from logic import *
-from typing import *
 
 
 class MenuUI:
@@ -22,7 +21,8 @@ class MenuUI:
             InvalidStudentGroup: "Student group is invalid",
             InvalidAssignmentId: "Assignment id is invalid",
             InvalidAssignmentDeadline: "Assignment deadline is invalid",
-            DuplicateAssignment: "Assignment was already given to student"
+            DuplicateAssignment: "Assignment was already given to student",
+            InvalidGrade: "Grade must be an integer between 0 and 10"
         }
         if type(error) in errorTypes:
             print(errorTypes[type(error)])
@@ -53,7 +53,10 @@ class Menu:
                 if choice == Menu.exitKey:
                     return
                 if choice in self.choiceList:
-                    self.choiceList[choice]()
+                    try:
+                        self.choiceList[choice]()
+                    except CustomError as error:
+                        MenuUI.handleCustomError(error)
                     valid = True
                 else:
                     print("Choice invalid")
@@ -70,13 +73,15 @@ class MainMenu(Menu):
             "2. Manage assignments",
             "3. Give assignments",
             "4. Grade student",
+            "5. Show statistics",
             Menu.exitKey + ". Exit"
         ]
         self.choiceList = {
             '1': self.manageStudents,
             '2': self.manageAssignments,
             '3': self.giveAssignments,
-            '4': self.gradeStudent
+            '4': self.gradeStudent,
+            '5': self.showStatistics
         }
 
     def manageStudents(self):
@@ -89,8 +94,29 @@ class MainMenu(Menu):
         AssignMenu(self.logicComponent).showMenu()
 
     def gradeStudent(self):
-        studentId = input("Student id: ")
-        # TODO Grade student for given assignment
+        studentId = input("Choose student id: ")
+        student = self.logicComponent.findStudent(studentId)
+        print("You are grading the student with name " + student.getName() + " from group " + str(
+            student.getGroup()))
+        assignmentList = self.logicComponent.getStudentUngradedAssignments(studentId)
+        if len(assignmentList) == 0:
+            print("The student has no ungraded assignments")
+            return
+        print("\nID - Description - Deadline")
+        for assignment in assignmentList:
+            print(ManageAssignmentsMenu.assignmentToStr(assignment))
+        assignmentId = input("Choose assignment id: ")
+        assignment = self.logicComponent.findAssignment(assignmentId)
+        self.logicComponent.assignmentGradable(studentId, assignmentId)
+        print(
+            "You are grading the assignment with description '" + assignment.getDescription() +
+            "' and deadline " + ManageAssignmentsMenu.dateToStr(assignment.getDeadline()))
+        grade = input("Choose grade: ")
+        self.logicComponent.grade(studentId, assignmentId, grade)
+        print("Assignment was graded")
+
+    def showStatistics(self):
+        StatisticsMenu(self.logicComponent).showMenu()
 
 
 class ManageStudentsMenu(Menu):
@@ -128,47 +154,35 @@ class ManageStudentsMenu(Menu):
     def addStudent(self):
         name = input("Student's name: ")
         group = input("Student's group: ")
-        try:
-            self.logicComponent.addStudent(name, group)
-            print("Student added")
-        except CustomError as error:
-            MenuUI.handleCustomError(error)
+        self.logicComponent.addStudent(name, group)
+        print("Student added")
 
     def removeStudent(self):
         studentId = input("Student id: ")
-        try:
-            self.logicComponent.removeStudent(studentId)
-            print("Student removed")
-        except CustomError as error:
-            MenuUI.handleCustomError(error)
+        self.logicComponent.removeStudent(studentId)
+        print("Student removed")
 
     def updateStudent(self):
         studentId = input("Student id: ")
-        try:
-            student = self.logicComponent.findStudent(studentId)
-            print("You are modifying the student with name " + student.getName() + " from group " + str(
-                student.getGroup()))
-            name = input("Student's new name: ")
-            group = input("Student's new group: ")
-            self.logicComponent.updateStudent(studentId, name, group)
-            print("Student information updated")
-        except CustomError as error:
-            MenuUI.handleCustomError(error)
+        student = self.logicComponent.findStudent(studentId)
+        print("You are modifying the student with name " + student.getName() + " from group " + str(
+            student.getGroup()))
+        name = input("Student's new name: ")
+        group = input("Student's new group: ")
+        self.logicComponent.updateStudent(studentId, name, group)
+        print("Student information updated")
 
     def listStudentGrades(self):
         studentId = input("Student id: ")
-        try:
-            student = self.logicComponent.findStudent(studentId)
-            print(student.getName() + "'s grades are:")
-            gradeList = self.logicComponent.listStudentGrades(studentId)
-            if len(gradeList) == 0:
-                print("No grades to show")
-            else:
-                print("Grade - Assignment ID")
-                for grade in gradeList:
-                    print(self.gradeToStr(grade))
-        except CustomError as error:
-            MenuUI.handleCustomError(error)
+        student = self.logicComponent.findStudent(studentId)
+        print(student.getName() + "'s grades are:")
+        gradeList = self.logicComponent.listStudentGrades(studentId)
+        if len(gradeList) == 0:
+            print("No grades to show")
+        else:
+            print("Grade - Assignment ID")
+            for grade in gradeList:
+                print(self.gradeToStr(grade))
 
     @staticmethod
     def gradeToStr(grade):
@@ -206,33 +220,24 @@ class ManageAssignmentsMenu(Menu):
     def addAssignment(self):
         description = input("Assignment's description: ")
         deadline = input("Assignment's deadline (format: day.month.year): ")
-        try:
-            self.logicComponent.addAssignment(description, deadline)
-            print("Assignment added")
-        except CustomError as error:
-            MenuUI.handleCustomError(error)
+        self.logicComponent.addAssignment(description, deadline)
+        print("Assignment added")
 
     def removeAssignment(self):
         assignmentId = input("Assignment id: ")
-        try:
-            self.logicComponent.removeAssignment(assignmentId)
-            print("Assignment removed")
-        except CustomError as error:
-            MenuUI.handleCustomError(error)
+        self.logicComponent.removeAssignment(assignmentId)
+        print("Assignment removed")
 
     def updateAssignment(self):
         assignmentId = input("Assignment id: ")
-        try:
-            assignment = self.logicComponent.findAssignment(assignmentId)
-            print(
-                "You are modifying the assignment with description '" + assignment.getDescription() +
-                "' and deadline " + ManageAssignmentsMenu.dateToStr(assignment.getDeadline()))
-            description = input("Assignment's new description: ")
-            deadline = input("Assignment's new deadline (format: day.month.year): ")
-            self.logicComponent.updateAssignment(assignmentId, description, deadline)
-            print("Assignment information updated")
-        except CustomError as error:
-            MenuUI.handleCustomError(error)
+        assignment = self.logicComponent.findAssignment(assignmentId)
+        print(
+            "You are modifying the assignment with description '" + assignment.getDescription() +
+            "' and deadline " + ManageAssignmentsMenu.dateToStr(assignment.getDeadline()))
+        description = input("Assignment's new description: ")
+        deadline = input("Assignment's new deadline (format: day.month.year): ")
+        self.logicComponent.updateAssignment(assignmentId, description, deadline)
+        print("Assignment information updated")
 
     @staticmethod
     def assignmentToStr(assignment: Assignment):
@@ -246,18 +251,15 @@ class ManageAssignmentsMenu(Menu):
 
     def listAssignmentGrades(self):
         assignmentId = input("Assignment id: ")
-        try:
-            assignment = self.logicComponent.findAssignment(assignmentId)
-            print("List of grades for the assignment with description '" + assignment.getDescription() + ":")
-            gradeList = self.logicComponent.listAssignmentGrades(assignmentId)
-            if len(gradeList) == 0:
-                print("No grades to show")
-            else:
-                print("Grade - Student ID")
-                for grade in gradeList:
-                    print(self.gradeToStr(grade))
-        except CustomError as error:
-            MenuUI.handleCustomError(error)
+        assignment = self.logicComponent.findAssignment(assignmentId)
+        print("List of grades for the assignment with description '" + assignment.getDescription() + ":")
+        gradeList = self.logicComponent.listAssignmentGrades(assignmentId)
+        if len(gradeList) == 0:
+            print("No grades to show")
+        else:
+            print("Grade - Student ID")
+            for grade in gradeList:
+                print(self.gradeToStr(grade))
 
     @staticmethod
     def gradeToStr(grade):
@@ -273,7 +275,7 @@ class AssignMenu(Menu):
         self.optionList = [
             "1. Give assignment to student",
             "2. Give assignment to group of students",
-            Menu.exitKey + ". Exit"
+            Menu.exitKey + ". Back"
         ]
         self.choiceList = {
             '1': self.assignToStudent,
@@ -281,31 +283,97 @@ class AssignMenu(Menu):
         }
 
     def assignToStudent(self):
-        try:
-            studentId = input("Choose student id: ")
-            student = self.logicComponent.findStudent(studentId)
-            print("You giving an assignment to the student with name " + student.getName() + " from group " + str(
-                student.getGroup()))
-            assignmentId = input("Choose assignment id: ")
-            assignment = self.logicComponent.findAssignment(assignmentId)
-            print(
-                "You are giving the assignment with description '" + assignment.getDescription() +
-                "' and deadline " + ManageAssignmentsMenu.dateToStr(assignment.getDeadline()))
-            self.logicComponent.assignToStudent(studentId, assignmentId)
-            print("Assignment was given")
-        except CustomError as error:
-            MenuUI.handleCustomError(error)
+        studentId = input("Choose student id: ")
+        student = self.logicComponent.findStudent(studentId)
+        print("You giving an assignment to the student with name " + student.getName() + " from group " + str(
+            student.getGroup()))
+        assignmentId = input("Choose assignment id: ")
+        assignment = self.logicComponent.findAssignment(assignmentId)
+        print(
+            "You are giving the assignment with description '" + assignment.getDescription() +
+            "' and deadline " + ManageAssignmentsMenu.dateToStr(assignment.getDeadline()))
+        self.logicComponent.assignToStudent(studentId, assignmentId)
+        print("Assignment was given")
 
     def assignToGroup(self):
-        try:
-            group = input("Choose group: ")
-            self.logicComponent.checkGroupExistence(group)
-            assignmentId = input("Choose assignment id: ")
-            assignment = self.logicComponent.findAssignment(assignmentId)
-            print(
-                "You are giving the assignment with description '" + assignment.getDescription() +
-                "' and deadline " + ManageAssignmentsMenu.dateToStr(assignment.getDeadline()))
-            self.logicComponent.assignToGroup(group, assignmentId)
-            print("Assignments were given")
-        except CustomError as error:
-            MenuUI.handleCustomError(error)
+        group = input("Choose group: ")
+        self.logicComponent.checkGroupExistence(group)
+        assignmentId = input("Choose assignment id: ")
+        assignment = self.logicComponent.findAssignment(assignmentId)
+        print(
+            "You are giving the assignment with description '" + assignment.getDescription() +
+            "' and deadline " + ManageAssignmentsMenu.dateToStr(assignment.getDeadline()))
+        self.logicComponent.assignToGroup(group, assignmentId)
+        print("Assignments were given")
+
+
+class StatisticsMenu(Menu):
+    menuName = "Statistics menu"
+
+    def __init__(self, logicComponent: LogicComponent):
+        super().__init__(logicComponent)
+
+        self.optionList = [
+            "1. Students with specified assignment, ordered alphabetically",
+            "2. Students with specified assignment, ordered by grade",
+            "3. Students sorted descending by average grade",
+            "4. Assignments sorted descending by average grade",
+            Menu.exitKey + ". Back"
+        ]
+        self.choiceList = {
+            '1': self.studentsSortedAlphabetically,
+            '2': self.studentsSortedByGrade,
+            '3': self.studentsSortedByAverage,
+            '4': self.assignmentsSortedByAverage
+        }
+
+    def studentsSortedAlphabetically(self):
+        assignmentId = input("Choose assignment id: ")
+        assignment = self.logicComponent.findAssignment(assignmentId)
+        print(
+            "You are viewing the students ordered alphabetically for the assignment with "
+            "description '" + assignment.getDescription() +
+            "' and deadline " + ManageAssignmentsMenu.dateToStr(assignment.getDeadline()))
+
+        studentList = self.logicComponent.getStudentsForAssignmentSortedAlphabetically(assignmentId)
+        if len(studentList) == 0:
+            print("No students received this assignment")
+            return
+        print("\nID - Name - Group")
+        for student in studentList:
+            print(ManageStudentsMenu.studentToStr(student))
+
+    def studentsSortedByGrade(self):
+        assignmentId = input("Choose assignment id: ")
+        assignment = self.logicComponent.findAssignment(assignmentId)
+        print(
+            "You are viewing the students ordered by grade for the assignment with "
+            "description '" + assignment.getDescription() +
+            "' and deadline " + ManageAssignmentsMenu.dateToStr(assignment.getDeadline()))
+
+        studentList = self.logicComponent.getStudentsForAssignmentSortedByGrade(assignmentId)
+        if len(studentList) == 0:
+            print("No students received this assignment")
+            return
+        print("\nID - Name - Group - Grade")
+        for student in studentList:
+            print(ManageStudentsMenu.studentToStr(student) + " - " +
+                  str(self.logicComponent.getGrade(student.getStudentId(), assignmentId)))
+
+    def studentsSortedByAverage(self):
+        resultList = self.logicComponent.getStudentsSortedByAverage()
+        if len(resultList) == 0:
+            print("No students to show")
+            return
+        print("\nID - Name - Group - Average grade")
+        for pair in resultList:
+            print(ManageStudentsMenu.studentToStr(pair[0]) + " - " + (str(pair[1]) if pair[1] != 0 else "No grades"))
+
+    def assignmentsSortedByAverage(self):
+        resultList = self.logicComponent.getAssignmentsSortedByAverage()
+        if len(resultList) == 0:
+            print("No assignments to show")
+            return
+        print("\nID - Description - Deadline - Average Grade")
+        for pair in resultList:
+            print(ManageAssignmentsMenu.assignmentToStr(pair[0]) + " - " + str(pair[1]))

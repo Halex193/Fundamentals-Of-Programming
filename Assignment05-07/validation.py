@@ -31,6 +31,8 @@ class InvalidAssignmentDescription(CustomError):
 class InvalidAssignmentDeadline(CustomError):
     pass
 
+class InvalidGrade(CustomError):
+    pass
 
 class ValidationUtils:
     """

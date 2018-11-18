@@ -51,12 +51,12 @@ class LogicComponent(ChangesHandler):
             self.__assignments.addAssignment(Assignment(0, 'Assignment 05-07', date(2018, 11, 28)))
         ]
 
-        self.__grades.assign(studentList[0], assignmentList[1])
+        self.__grades.assign(studentList[0], assignmentList[1]).setGrade(10)
         self.__grades.assign(studentList[0], assignmentList[3])
-        self.__grades.assign(studentList[1], assignmentList[1])
-        self.__grades.assign(studentList[1], assignmentList[2])
+        self.__grades.assign(studentList[1], assignmentList[1]).setGrade(5)
+        self.__grades.assign(studentList[1], assignmentList[2]).setGrade(4)
         self.__grades.assign(studentList[2], assignmentList[2])
-        self.__grades.assign(studentList[2], assignmentList[3])
+        self.__grades.assign(studentList[2], assignmentList[3]).setGrade(9)
         self.__grades.assign(studentList[3], assignmentList[1])
 
     # Manage Students menu
@@ -208,13 +208,88 @@ class LogicComponent(ChangesHandler):
             except DuplicateAssignment:
                 pass
 
-    def listStudentGrades(self, studentId):
+    def listStudentGrades(self, studentId) -> List[Grade]:
         student = self.findStudent(studentId)
         return self.__grades.getStudentGrades(student)
 
-    def listAssignmentGrades(self, assignmentId):
+    def listAssignmentGrades(self, assignmentId) -> List[Grade]:
         assignment = self.findAssignment(assignmentId)
         return self.__grades.getAssignmentGrades(assignment)
+
+    def getStudentUngradedAssignments(self, studentId) -> List[Assignment]:
+        student = self.findStudent(studentId)
+        studentGrades = self.__grades.getStudentGrades(student)
+        studentNoneGrades = [grade for grade in studentGrades if grade.getGrade() is None]
+        return [self.findAssignment(grade.getAssignmentId()) for grade in studentNoneGrades]
+
+    def grade(self, studentId: str, assignmentId: str, grade: str):
+
+        self.findStudent(studentId)
+        self.findAssignment(assignmentId)
+        grade = self.parseInt(grade, InvalidGrade)
+        if grade < 0 or grade > 10:
+            raise InvalidGrade
+        gradeObject = self.findGrade(studentId, assignmentId)
+        if gradeObject is None or gradeObject.getGrade() is not None:
+            raise InvalidAssignmentId
+        gradeObject.setGrade(grade)
+
+    def assignmentGradable(self, studentId: str, assignmentId: str):
+        gradeObject = self.findGrade(studentId, assignmentId)
+        if gradeObject is None or gradeObject.getGrade() is not None:
+            raise InvalidAssignmentId
+
+    def findGrade(self, studentId: str, assignmentId: str) -> Grade:
+        studentId = self.parseInt(studentId, InvalidStudentId)
+        assignmentId = self.parseInt(assignmentId, InvalidAssignmentId)
+        return self.__grades[studentId, assignmentId]
+
+    def getStudentsForAssignmentSortedAlphabetically(self, assignmentId) -> List[Student]:
+        grades = self.listAssignmentGrades(assignmentId)
+        students = [self.findStudent(grade.getStudentId()) for grade in grades]
+        return sorted(students, key=lambda student: student.getName())
+
+    def getStudentsForAssignmentSortedByGrade(self, assignmentId) -> List[Student]:
+        grades = self.listAssignmentGrades(assignmentId)
+        noneGrades = [grade for grade in grades if grade.getGrade() is None]
+        givenGrades = [grade for grade in grades if grade.getGrade() is not None]
+        sortedGrades = sorted(givenGrades, key=lambda grade: grade.getGrade(), reverse=True)
+        students = [self.findStudent(grade.getStudentId()) for grade in sortedGrades + noneGrades]
+        return students
+
+    def getStudentsSortedByAverage(self) -> List[Tuple[Student, float]]:
+        studentList = []
+        students = self.__students
+        for student in students:
+            sum = 0
+            number = 0
+            for grade in self.__grades.getStudentGrades(student):
+                if grade.getGrade() is not None:
+                    sum += grade.getGrade()
+                    number += 1
+            average = sum / number if number != 0 else 0
+            studentList.append((student, average))
+        return sorted(studentList, key=lambda pair: pair[1], reverse=True)
+
+    def getAssignmentsSortedByAverage(self) -> List[Tuple[Assignment, float]]:
+        assignmentList = []
+        assignments = self.__assignments
+        for assignment in assignments:
+            sum = 0
+            number = 0
+            for grade in self.__grades.getAssignmentGrades(assignment):
+                if grade.getGrade() is not None:
+                    sum += grade.getGrade()
+                    number += 1
+            if number != 0:
+                average = sum / number
+                assignmentList.append((assignment, average))
+        return sorted(assignmentList, key=lambda pair: pair[1], reverse=True)
+
+    def getGrade(self, studentId, assignmentId):
+        student = self.findStudent(studentId)
+        assignment = self.findAssignment(assignmentId)
+        return self.__grades[student.getStudentId(), assignment.getAssignmentId()]
 
 
 class ChangesStack:
