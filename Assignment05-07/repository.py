@@ -6,24 +6,15 @@ from typing import Tuple, List
 from model import *
 
 
-class OnDeleteListener:
-    """
-    Super class for classes that listen to the delete trigger of Collection classes
-    """
-    # @abstractmethod
-    # def onDelete(self, item)
-    pass
-
-
-class Repository(OnDeleteListener):
+class Repository:
     """
     Holds all the program data
     """
 
     def __init__(self):
-        self.__students = StudentCollection(self)
+        self.__students = StudentCollection()
         self.__grades = GradeCollection()
-        self.__assignments = AssignmentCollection(self)
+        self.__assignments = AssignmentCollection()
 
     def getStudents(self):
         return self.__students
@@ -34,37 +25,16 @@ class Repository(OnDeleteListener):
     def getAssignments(self):
         return self.__assignments
 
-    def onDelete(self, item):
-        """
-        Implements cascade delete for given item
-        """
-        valid_types = {
-            Student: self.onStudentDeleted,
-            Assignment: self.onAssignmentDeleted
-        }
-        if type(item) in valid_types:
-            valid_types[type(item)](item)
-
-    def onStudentDeleted(self, student: Student):
-        gradeList = self.__grades.getStudentGrades(student)
-        for grade in gradeList:
-            del self.__grades[grade]
-
-    def onAssignmentDeleted(self, assignment: Assignment):
-        gradeList = self.__grades.getAssignmentGrades(assignment)
-        for grade in gradeList:
-            del self.__grades[grade]
-
 
 class StudentCollection:
     """
     Holds the student objects and provides means of accessing and modifying them
     """
-    def __init__(self, onDeleteListener: OnDeleteListener = None):
+
+    def __init__(self):
         self.__students = {}
         self.__idSeed = 0
         self.__length = 0
-        self.__onDeleteListener = onDeleteListener
 
     def addStudent(self, student: Student) -> Student:
         """
@@ -72,9 +42,14 @@ class StudentCollection:
         :param student: A student object to be added to the collection (without the studentId)
         :return: The new student object that is contained in the list
         """
-        newStudent = Student.copyStudent(self.__idSeed, student)
-        self.__students[self.__idSeed] = newStudent
-        self.__idSeed += 1
+        newId = student.getStudentId()
+        if student.getStudentId() in self.__students.keys():
+            newId = self.__idSeed
+            self.__idSeed += 1
+        if newId >= self.__idSeed:
+            self.__idSeed = newId + 1
+        newStudent = Student.copyStudent(newId, student)
+        self.__students[newId] = newStudent
         self.__length += 1
         return newStudent
 
@@ -103,10 +78,10 @@ class StudentCollection:
         return None
 
     def __delitem__(self, key: Student):
-        if key in self.__students.values():
-            del self.__students[key.getStudentId()]
-            if self.__onDeleteListener is not None:
-                self.__onDeleteListener.onDelete(key)
+        itemId = key.getStudentId()
+        if itemId in self.__students.keys():
+            del self.__students[itemId]
+            self.__length -= 1
         else:
             raise KeyError("Student is not stored in collection")
 
@@ -115,6 +90,7 @@ class GradeCollection:
     """
     Holds the grade objects and provides means of accessing and modifying them
     """
+
     def __init__(self):
         self.__grades = {}
 
@@ -129,8 +105,12 @@ class GradeCollection:
             raise KeyError('Student was already assigned this assignment')
         newGrade = Grade(student.getStudentId(), assignment.getAssignmentId())
         self.__grades[key] = newGrade
-        self.__grades[key] = newGrade
         return newGrade
+
+    def addGrade(self, grade: Grade):
+        key = (grade.getStudentId(), grade.getAssignmentId())
+        if key not in self.__grades.keys():
+            self.__grades[key] = grade
 
     def getStudentGrades(self, student: Student) -> List[Grade]:
         return [grade for grade in self.__grades.values() if grade.getStudentId() == student.getStudentId()]
@@ -147,21 +127,25 @@ class GradeCollection:
         return None
 
     def __delitem__(self, key: Grade):
-        if key in self.__grades.values():
-            del self.__grades[(key.getStudentId(), key.getAssignmentId())]
+        itemId = (key.getStudentId(), key.getAssignmentId())
+        if itemId in self.__grades.keys():
+            del self.__grades[itemId]
         else:
             raise KeyError("Grade is not stored in collection")
+
+    def getGradeList(self):
+        return [grade for grade in self.__grades.values()]
 
 
 class AssignmentCollection:
     """
     Holds the assignment objects and provides means of accessing and modifying them
     """
-    def __init__(self, onDeleteListener: OnDeleteListener = None):
+
+    def __init__(self):
         self.__assignments = {}
         self.__idSeed = 0
         self.__length = 0
-        self.__onDeleteListener = onDeleteListener
 
     def addAssignment(self, assignment: Assignment) -> Assignment:
         """
@@ -169,9 +153,14 @@ class AssignmentCollection:
         :param assignment: An assignment object to be added to the collection (without the assignmentId)
         :return: The new assignment object that is contained in the list
         """
-        newAssignment = Assignment.copyAssignment(self.__idSeed, assignment)
-        self.__assignments[self.__idSeed] = newAssignment
-        self.__idSeed += 1
+        newId = assignment.getAssignmentId()
+        if assignment.getAssignmentId() in self.__assignments.keys():
+            newId = self.__idSeed
+            self.__idSeed += 1
+        if newId >= self.__idSeed:
+            self.__idSeed = newId + 1
+        newAssignment = Assignment.copyAssignment(newId, assignment)
+        self.__assignments[newId] = newAssignment
         self.__length += 1
         return newAssignment
 
@@ -199,9 +188,9 @@ class AssignmentCollection:
         return None
 
     def __delitem__(self, key: Assignment):
-        if key in self.__assignments.values():
-            del self.__assignments[key.getAssignmentId()]
-            if self.__onDeleteListener is not None:
-                self.__onDeleteListener.onDelete(key)
+        itemId = key.getAssignmentId()
+        if itemId in self.__assignments.keys():
+            del self.__assignments[itemId]
+            self.__length -= 1
         else:
             raise KeyError("Assignment is not stored in collection")

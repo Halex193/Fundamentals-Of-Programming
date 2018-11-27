@@ -37,16 +37,10 @@ class TestRepository(TestCase):
         self.assertTrue(len(self.grades.getAssignmentGrades(assignment1)) == 1)
 
         del self.students[student1]
-        self.assertTrue(len(self.grades) == 0)
-
-        self.grades.assign(student1, assignment1)
-        self.grades.assign(student2, assignment1)
-        self.assertTrue(len(self.grades) == 2)
-        self.assertTrue(len(self.grades.getStudentGrades(student1)) == 1)
-        self.assertTrue(len(self.grades.getAssignmentGrades(assignment1)) == 2)
+        self.assertEqual(len(self.students), 1)
 
         del self.assignments[assignment1]
-        self.assertTrue(len(self.grades) == 0)
+        self.assertEqual(len(self.students), 1)
 
 
 class TestStudentCollection(TestCase):

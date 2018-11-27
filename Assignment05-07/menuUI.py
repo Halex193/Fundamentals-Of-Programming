@@ -74,6 +74,9 @@ class MainMenu(Menu):
             "3. Give assignments",
             "4. Grade student",
             "5. Show statistics",
+            "6. Undo",
+            "7. Redo",
+            "8. List repository",
             Menu.exitKey + ". Exit"
         ]
         self.choiceList = {
@@ -81,7 +84,10 @@ class MainMenu(Menu):
             '2': self.manageAssignments,
             '3': self.giveAssignments,
             '4': self.gradeStudent,
-            '5': self.showStatistics
+            '5': self.showStatistics,
+            '6': self.undo,
+            '7': self.redo,
+            '8': self.listRepo
         }
 
     def manageStudents(self):
@@ -117,6 +123,28 @@ class MainMenu(Menu):
 
     def showStatistics(self):
         StatisticsMenu(self.logicComponent).showMenu()
+
+    def undo(self):
+        if self.logicComponent.undo():
+            print("Last operation undone")
+        else:
+            print("No operation left to undo")
+
+    def redo(self):
+        if self.logicComponent.redo():
+            print("Last undo operation reversed")
+        else:
+            print("No undo operation left to reverse")
+
+    def listRepo(self):
+        print("\nSTUDENTS")
+        ManageStudentsMenu(self.logicComponent).listStudents()
+        print("\nGRADES")
+        print("\nStudentId - AssignmentId - Grade")
+        for grade in self.logicComponent.listGrades():
+            print(str(grade.getStudentId()) + " - " + str(grade.getAssignmentId()) + " - " + str(grade))
+        print("\nASSIGNMENTS")
+        ManageAssignmentsMenu(self.logicComponent).listAssignments()
 
 
 class ManageStudentsMenu(Menu):

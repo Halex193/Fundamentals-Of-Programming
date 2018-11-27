@@ -1,8 +1,8 @@
 """
 Main module
 """
-from logic import LogicComponent
-from repository import Repository
+from datetime import datetime
+
 from menuUI import *
 
 

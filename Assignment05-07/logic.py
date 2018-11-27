@@ -1,17 +1,86 @@
 """
 This is the logic module
 """
-from datetime import datetime
+from copy import copy
+from typing import Type, Union
 
 from repository import *
 from validation import *
-from typing import *
+
+
+class ChangesStack:
+    """
+    The stack of changes committed to the repository
+    """
+
+    class Change:
+        """
+        Defines a change
+        """
+
+        def __init__(self, item):
+            self.__item = copy(item)
+
+        def getItem(self):
+            return self.__item
+
+    class ItemAdded(Change):
+        pass
+
+    class ItemRemoved(Change):
+        pass
+
+    def __init__(self, changesHandler):
+        self.__changesStack = []
+        self.__currentCommit = []
+        self.__currentIndex = -1
+        self.__changesHandler = changesHandler
+
+    def beginCommit(self):
+        self.__currentCommit = []
+
+    def endCommit(self):
+        self.__changesStack = self.__changesStack[:self.__currentIndex + 1]
+        self.__changesStack.append(self.__currentCommit)
+        self.__currentIndex += 1
+
+    def addChange(self, change: Change):
+        self.__currentCommit.append(change)
+
+    def undo(self) -> bool:
+        """
+        Undoes the last operation
+        :return: True if succeeded, False otherwise
+        """
+        if self.__currentIndex == -1:
+            return False
+        commit: List[ChangesStack.Change] = self.__changesStack[self.__currentIndex]
+        self.__changesHandler.handleChanges(commit, reverse=True)
+        self.__currentIndex -= 1
+        return True
+
+    def redo(self) -> bool:
+        """
+        Reverses the last undo operation
+        :return: True if succeeded, False otherwise
+        """
+        if self.__currentIndex == len(self.__changesStack) - 1:
+            return False
+        commit: List[ChangesStack.Change] = self.__changesStack[self.__currentIndex + 1]
+        self.__changesHandler.handleChanges(commit, reverse=False)
+        self.__currentIndex += 1
+        return True
+
+    def clearStack(self):
+        self.__changesStack = []
+        self.__currentCommit = []
+        self.__currentIndex = -1
 
 
 class ChangesHandler:
     # @abstractmethod
-    # def handleChanges(self, changes):
-    pass
+    def handleChanges(self, changesList: List[ChangesStack.Change], reverse: bool):
+        pass
 
 
 class DuplicateAssignment(CustomError):
@@ -31,8 +100,46 @@ class LogicComponent(ChangesHandler):
         self.__changesStack: ChangesStack = ChangesStack(self)
         self.currentDate = currentDate
 
-    def handleChanges(self, changes):
-        pass
+    def handleChanges(self, changesList: List[ChangesStack.Change], reverse):
+        """
+        Handles changes provided by the ChangesStack
+        """
+        if reverse:
+            functionDict = {
+                ChangesStack.ItemAdded: self.removeItem,
+                ChangesStack.ItemRemoved: self.addItem
+            }
+            for change in reversed(changesList):
+                itemType: Type[Union[ChangesStack.ItemAdded, ChangesStack.ItemRemoved]] = type(change)
+                item = change.getItem()
+                functionDict[itemType](item)
+        else:
+            functionDict = {
+                ChangesStack.ItemAdded: self.addItem,
+                ChangesStack.ItemRemoved: self.removeItem
+            }
+            for change in changesList:
+                itemType = type(change)
+                item = change.getItem()
+                functionDict[itemType](item)
+
+    def addItem(self, item):
+        itemType = type(item)
+        if itemType is Student:
+            self.__students.addStudent(item)
+        elif itemType is Grade:
+            self.__grades.addGrade(item)
+        elif itemType is Assignment:
+            self.__assignments.addAssignment(item)
+
+    def removeItem(self, item):
+        itemType = type(item)
+        if itemType is Student:
+            del self.__students[item]
+        elif itemType is Grade:
+            del self.__grades[item]
+        elif itemType is Assignment:
+            del self.__assignments[item]
 
     def populateRepository(self):
         """
@@ -73,7 +180,14 @@ class LogicComponent(ChangesHandler):
         group = self.parseInt(group, InvalidStudentGroup)
         student = Student(0, name, group)
         ValidationUtils.Student.validateStudent(student)
-        return self.__students.addStudent(student)
+
+        newStudent = self.__students.addStudent(student)
+
+        self.__changesStack.beginCommit()
+        self.__changesStack.addChange(ChangesStack.ItemAdded(newStudent))
+        self.__changesStack.endCommit()
+
+        return newStudent
 
     @staticmethod
     def parseInt(string: str, errorType: type) -> int:
@@ -91,7 +205,15 @@ class LogicComponent(ChangesHandler):
         """
         studentId = self.parseInt(studentId, InvalidStudentId)
         student = self.findStudent(studentId)
+        self.__changesStack.beginCommit()
+        self.__changesStack.addChange(ChangesStack.ItemRemoved(student))
+
         del self.__students[student]
+        gradeList = self.__grades.getStudentGrades(student)
+        for grade in gradeList:
+            self.__changesStack.addChange(ChangesStack.ItemRemoved(grade))
+            del self.__grades[grade]
+        self.__changesStack.endCommit()
 
     def findStudent(self, studentId) -> Student:
         """
@@ -111,8 +233,12 @@ class LogicComponent(ChangesHandler):
         group = self.parseInt(group, InvalidStudentGroup)
         ValidationUtils.Student.validateStudent(Student(0, name, group))
         student = self.findStudent(studentId)
+        self.__changesStack.beginCommit()
+        self.__changesStack.addChange(ChangesStack.ItemRemoved(student))
         student.setName(name)
         student.setGroup(group)
+        self.__changesStack.addChange(ChangesStack.ItemAdded(student))
+        self.__changesStack.endCommit()
 
     # Manage Assignments Menu
     def listAssignments(self) -> List[Assignment]:
@@ -129,12 +255,20 @@ class LogicComponent(ChangesHandler):
         deadline = self.parseDate(deadline, InvalidAssignmentDeadline)
         assignment = Assignment(0, description, deadline)
         ValidationUtils.Assignment.validateAssignment(assignment)
-        return self.__assignments.addAssignment(assignment)
+
+        newAssignment = self.__assignments.addAssignment(assignment)
+
+        self.__changesStack.beginCommit()
+        self.__changesStack.addChange(ChangesStack.ItemAdded(newAssignment))
+        self.__changesStack.endCommit()
+
+        return newAssignment
 
     @staticmethod
     def parseDate(string: str, errorType: type) -> date:
         """
-        Parses a string to a date. Valid format: day.month.year . If the conversion fails, raises the specified exception
+        Parses a string to a date. Valid format: day.month.year .
+        If the conversion fails, raises the specified exception
         """
         try:
             symbols = string.split('.')
@@ -153,7 +287,14 @@ class LogicComponent(ChangesHandler):
         """
         assignmentId = self.parseInt(assignmentId, InvalidAssignmentId)
         assignment = self.findAssignment(assignmentId)
+        self.__changesStack.beginCommit()
+        self.__changesStack.addChange(ChangesStack.ItemRemoved(assignment))
         del self.__assignments[assignment]
+        gradeList = self.__grades.getAssignmentGrades(assignment)
+        for grade in gradeList:
+            self.__changesStack.addChange(ChangesStack.ItemRemoved(grade))
+            del self.__grades[grade]
+        self.__changesStack.endCommit()
 
     def findAssignment(self, assignmentId) -> Assignment:
         """
@@ -173,20 +314,31 @@ class LogicComponent(ChangesHandler):
         deadline = self.parseDate(deadline, InvalidAssignmentDeadline)
         ValidationUtils.Assignment.validateAssignment(Assignment(0, description, deadline))
         assignment = self.findAssignment(assignmentId)
+        self.__changesStack.beginCommit()
+        self.__changesStack.addChange(ChangesStack.ItemRemoved(assignment))
         assignment.setDescription(description)
         assignment.setDeadline(deadline)
+        self.__changesStack.addChange(ChangesStack.ItemAdded(assignment))
+        self.__changesStack.endCommit()
 
     # Give assignments menu
-    def assignToStudent(self, studentId, assignmentId) -> Grade:
+    def assignToStudent(self, studentId, assignmentId, newCommit=True) -> Grade:
         """
         Gives an assignment to a student
         """
         student = self.findStudent(studentId)
         assignment = self.findAssignment(assignmentId)
         try:
-            return self.__grades.assign(student, assignment)
+            newGrade = self.__grades.assign(student, assignment)
         except KeyError:
             raise DuplicateAssignment
+        if newGrade is not None:
+            if newCommit:
+                self.__changesStack.beginCommit()
+            self.__changesStack.addChange(ChangesStack.ItemAdded(newGrade))
+            if newCommit:
+                self.__changesStack.endCommit()
+            return newGrade
 
     def checkGroupExistence(self, group: str):
         """
@@ -202,11 +354,13 @@ class LogicComponent(ChangesHandler):
         """
         group = self.parseInt(group, InvalidStudentGroup)
         groupStudents = [student for student in self.__students if student.getGroup() == group]
+        self.__changesStack.beginCommit()
         for student in groupStudents:
             try:
-                self.assignToStudent(student.getStudentId(), assignmentId)
+                self.assignToStudent(student.getStudentId(), assignmentId, newCommit=False)
             except DuplicateAssignment:
                 pass
+        self.__changesStack.endCommit()
 
     def listStudentGrades(self, studentId) -> List[Grade]:
         """
@@ -239,7 +393,11 @@ class LogicComponent(ChangesHandler):
         gradeObject = self.findGrade(studentId, assignmentId)
         if gradeObject is None or gradeObject.getGrade() is not None:
             raise InvalidAssignmentId
+        self.__changesStack.beginCommit()
+        self.__changesStack.addChange(ChangesStack.ItemRemoved(gradeObject))
         gradeObject.setGrade(grade)
+        self.__changesStack.addChange(ChangesStack.ItemAdded(gradeObject))
+        self.__changesStack.endCommit()
 
     def getStudentUngradedAssignments(self, studentId) -> List[Assignment]:
         """
@@ -342,27 +500,20 @@ class LogicComponent(ChangesHandler):
                     break
         return studentList
 
-
-class ChangesStack:
-    """
-    The stack of changes committed to the repository
-    """
-
-    def __init__(self, changesHandler):
-        self.__changesStack = []
-        self.__changesHandler = changesHandler
-
-    def beginCommit(self):
-        pass
-
-    def endCommit(self):
-        pass
-
-    def addChange(self):
-        pass
-
     def undo(self):
-        pass
+        """
+        Undoes the last operation
+        """
+        return self.__changesStack.undo()
 
     def redo(self):
-        pass
+        """
+        Reverses the last undo operation
+        """
+        return self.__changesStack.redo()
+
+    def listGrades(self):
+        return self.__grades.getGradeList()
+
+    def clearHistory(self):
+        self.__changesStack.clearStack()

@@ -8,6 +8,7 @@ class Student:
     """
     Represents a student
     """
+
     def __init__(self, studentId: int, name: str, group: int = None):
         self.__studentId = studentId
         self.__name = name
@@ -42,11 +43,15 @@ class Student:
     def copyStudent(studentId, student):
         return Student(studentId, student.__name, student.__group)
 
+    def __copy__(self):
+        return Student(self.__studentId, self.__name, self.__group)
+
 
 class Grade:
     """
     Represents a grade
     """
+
     def __init__(self, studentId: int, assignmentId: int, grade: int = None):
         self.__studentId = studentId
         self.__assignmentId = assignmentId
@@ -78,11 +83,15 @@ class Grade:
             return True
         return False
 
+    def __copy__(self):
+        return Grade(self.__studentId, self.__assignmentId, self.__grade)
+
 
 class Assignment:
     """
     Represents an assignment
     """
+
     def __init__(self, assignmentId: int, description: str, deadline: date):
         self.__assignmentId = assignmentId
         self.__description = description
@@ -116,6 +125,9 @@ class Assignment:
     @staticmethod
     def copyAssignment(assignmentId, assignment):
         return Assignment(assignmentId, assignment.__description, assignment.__deadline)
+
+    def __copy__(self):
+        return Assignment(self.__assignmentId, self.__description, self.__deadline)
 
 
 class InvalidOperationException(Exception):

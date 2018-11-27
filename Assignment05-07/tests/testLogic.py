@@ -1,7 +1,7 @@
 from typing import List
 from unittest import TestCase
 from repository import Repository
-from logic import LogicComponent
+from logic import LogicComponent, ChangesHandler
 from validation import *
 
 
@@ -15,10 +15,7 @@ class TestLogicComponent(TestCase):
         self.repository = None
         self.logicComponent = None
 
-    def test_handleChanges(self):
-        pass
-
-    def test_populateRepository(self):
+    def testPopulateRepository(self):
         self.logicComponent.populateRepository()
         self.assertTrue(len(self.logicComponent.listStudents()) != 0)
         self.assertTrue(len(self.logicComponent.listAssignments()) != 0)
@@ -40,6 +37,11 @@ class TestLogicComponent(TestCase):
         student = self.logicComponent.addStudent('Ricky', '7')
         self.logicComponent.removeStudent(str(student.getStudentId()))
         self.assertTrue(len(self.logicComponent.listStudents()) == oldLength)
+
+        self.populateRepository()
+        gradeLength = len(self.logicComponent.listGrades())
+        self.logicComponent.removeStudent('1')
+        self.assertNotEqual(len(self.logicComponent.listGrades()), gradeLength)
 
     def testFindStudent(self):
         student = self.logicComponent.addStudent('Ricky', '7')
@@ -88,6 +90,11 @@ class TestLogicComponent(TestCase):
         assignment = self.logicComponent.addAssignment('Project', '2.10.2018')
         self.logicComponent.removeAssignment(str(assignment.getAssignmentId()))
         self.assertTrue(len(self.logicComponent.listAssignments()) == oldLength)
+
+        self.populateRepository()
+        gradeLength = len(self.logicComponent.listGrades())
+        self.logicComponent.removeAssignment('1')
+        self.assertNotEqual(len(self.logicComponent.listGrades()), gradeLength)
 
     def testFindAssignment(self):
         assignment = self.logicComponent.addAssignment('Project', '2.10.2018')
@@ -220,6 +227,7 @@ class TestLogicComponent(TestCase):
         self.logicComponent.assignToStudent(studentList[2].getStudentId(),
                                             assignmentList[3].getAssignmentId()).setGrade(9)
         self.logicComponent.assignToStudent(studentList[3].getStudentId(), assignmentList[1].getAssignmentId())
+        self.logicComponent.clearHistory()
 
     def testGetStudentsForAssignmentSortedAlphabetically(self):
         self.populateRepository()
@@ -258,3 +266,48 @@ class TestLogicComponent(TestCase):
         student = self.logicComponent.findStudent
         output = [student(2), student(3)]
         self.assertEqual(output, self.logicComponent.lateStudents())
+
+    def testUndoRedo(self):
+        self.populateRepository()
+
+        studentNumber = len(self.logicComponent.listStudents())
+        self.logicComponent.addStudent("Sample Name", '67')
+        self.assertEqual(len(self.logicComponent.listStudents()), studentNumber + 1)
+        self.logicComponent.undo()
+        self.assertEqual(len(self.logicComponent.listStudents()), studentNumber)
+        self.logicComponent.undo()
+        self.assertEqual(len(self.logicComponent.listStudents()), studentNumber)
+        self.logicComponent.redo()
+        self.assertEqual(len(self.logicComponent.listStudents()), studentNumber + 1)
+        self.logicComponent.redo()
+        self.assertEqual(len(self.logicComponent.listStudents()), studentNumber + 1)
+        self.logicComponent.clearHistory()
+
+        gradeNumber = len(self.logicComponent.listGrades())
+        self.logicComponent.assignToStudent('1', '0')
+        self.assertEqual(len(self.logicComponent.listGrades()), gradeNumber + 1)
+        self.logicComponent.undo()
+        self.assertEqual(len(self.logicComponent.listGrades()), gradeNumber)
+        self.logicComponent.undo()
+        self.assertEqual(len(self.logicComponent.listGrades()), gradeNumber)
+        self.logicComponent.redo()
+        self.assertEqual(len(self.logicComponent.listGrades()), gradeNumber + 1)
+        self.logicComponent.redo()
+        self.assertEqual(len(self.logicComponent.listGrades()), gradeNumber + 1)
+        self.logicComponent.clearHistory()
+
+        assignmentNumber = len(self.logicComponent.listAssignments())
+        self.logicComponent.addAssignment("Sample description", '6.7.2018')
+        self.assertEqual(len(self.logicComponent.listAssignments()), assignmentNumber + 1)
+        self.logicComponent.undo()
+        self.assertEqual(len(self.logicComponent.listAssignments()), assignmentNumber)
+        self.logicComponent.undo()
+        self.assertEqual(len(self.logicComponent.listAssignments()), assignmentNumber)
+        self.logicComponent.redo()
+        self.assertEqual(len(self.logicComponent.listAssignments()), assignmentNumber + 1)
+        self.logicComponent.redo()
+        self.assertEqual(len(self.logicComponent.listAssignments()), assignmentNumber + 1)
+        self.logicComponent.clearHistory()
+
+    def testChangesHandlerAbstract(self):
+        ChangesHandler().handleChanges([], True)
