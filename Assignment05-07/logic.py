@@ -1,6 +1,8 @@
 """
 This is the logic module
 """
+import datetime
+import random
 from copy import copy
 from typing import Type, Union
 
@@ -37,14 +39,23 @@ class ChangesStack:
         self.__changesHandler = changesHandler
 
     def beginCommit(self):
+        """
+        Initializes a new commit
+        """
         self.__currentCommit = []
 
     def endCommit(self):
+        """
+        Appends the current commit to the chages stack
+        """
         self.__changesStack = self.__changesStack[:self.__currentIndex + 1]
         self.__changesStack.append(self.__currentCommit)
         self.__currentIndex += 1
 
     def addChange(self, change: Change):
+        """
+        Adds the change to the current commit
+        """
         self.__currentCommit.append(change)
 
     def undo(self) -> bool:
@@ -72,6 +83,9 @@ class ChangesStack:
         return True
 
     def clearStack(self):
+        """
+        Clears the changes stack
+        """
         self.__changesStack = []
         self.__currentCommit = []
         self.__currentIndex = -1
@@ -145,28 +159,144 @@ class LogicComponent(ChangesHandler):
         """
         Adds default data to the repository
         """
-        studentList = [
-            self.__students.addStudent(Student(0, 'Andrew', 915)),
-            self.__students.addStudent(Student(0, 'Richard', 915)),
-            self.__students.addStudent(Student(0, 'John', 917)),
-            self.__students.addStudent(Student(0, 'Hori', 917))
+        self.addRandomStudents(50)
+        self.addRandomAssignments(50)
+        self.addRandomGrades(40, 40, 50)
+
+        self.clearHistory()
+
+    def addRandomStudents(self, number):
+        firstNames = [
+            "Richard",
+            "Andrew",
+            "John",
+            "Ray",
+            "Ana",
+            "Jessica",
+            "Bob",
+            "Tyler",
+            "Lawrence",
+            "Kimberly",
+            "Scarlet",
+            "Diana",
+            "Sherlock",
+            "Damien",
+            "Kathy"
         ]
-        assignmentList = [
-            self.__assignments.addAssignment(Assignment(0, 'Assignment 01', date(2018, 10, 10))),
-            self.__assignments.addAssignment(Assignment(0, 'Assignment 02', date(2018, 10, 17))),
-            self.__assignments.addAssignment(Assignment(0, 'Assignment 03-04', date(2018, 10, 31))),
-            self.__assignments.addAssignment(Assignment(0, 'Assignment 05-07', date(2018, 11, 28)))
+        lastNames = [
+            "Brossard",
+            "Crosland",
+            "Hutton",
+            "Holmes",
+            "Hudson",
+            "Watson",
+            "Heaton",
+            "Nelligan",
+            "Spears",
+            "Redman",
+            "Zion",
+            "Lambert"
+        ]
+        groups = [
+            911,
+            912,
+            913,
+            914,
+            915,
+            916,
+            917
+        ]
+        for i in range(number):
+            firstName = random.choice(firstNames)
+            lastName = random.choice(lastNames)
+            group = random.choice(groups)
+            self.addStudent(firstName + " " + lastName, group)
+
+    def addRandomAssignments(self, number):
+        descriptionTitles = [
+            "project",
+            "documentary",
+            "study",
+        ]
+        descriptionSubjects = [
+            "importance",
+            "problem",
+            "execution",
+            "reuse",
+            "toxicity",
+            "revolution",
+            "discovery",
+            "superiority",
+            "union",
+            "replication"
+        ]
+        descriptionAdjectives = [
+            "dumb",
+            "dark",
+            "unused",
+            "unseen",
+            "reheated",
+            "purple",
+            "the chosen",
+            "fast",
+            "stupid",
+            "left-handed",
+            "drunk",
+            "smart-ass"
+        ]
+        descriptionNouns = [
+            "programmers",
+            "memes",
+            "weed",
+            "meals",
+            "chemistry",
+            "doors",
+            "birds",
+            "cars",
+            "PCs",
+            "floppy disks",
+            "refrigerators",
+            "ice",
+            "mountain trip",
+            "stone age",
+            "underground cavern",
+            "board games",
+            "drawings"
         ]
 
-        self.__grades.assign(studentList[0], assignmentList[1]).setGrade(10)
-        self.__grades.assign(studentList[0], assignmentList[3])
-        self.__grades.assign(studentList[1], assignmentList[1]).setGrade(5)
-        self.__grades.assign(studentList[1], assignmentList[2]).setGrade(4)
-        self.__grades.assign(studentList[2], assignmentList[2])
-        self.__grades.assign(studentList[2], assignmentList[3]).setGrade(9)
-        self.__grades.assign(studentList[3], assignmentList[1])
+        for i in range(number):
+            descriptionTitle = random.choice(descriptionTitles)
+            descriptionSubject = random.choice(descriptionSubjects)
+            descriptionAdjective = random.choice(descriptionAdjectives)
+            descriptionNoun = random.choice(descriptionNouns)
+            description = "A " + descriptionTitle + " about the " + descriptionSubject + " of " + descriptionAdjective + \
+                          " " + descriptionNoun
+
+            assignmentDate = LogicComponent.randomDate(date(2018, 1, 1), date(2020, 1, 1))
+            dateString = str(assignmentDate.day) + "." + str(assignmentDate.month) + "." + str(assignmentDate.year)
+            self.addAssignment(description, dateString)
+
+    @staticmethod
+    def randomDate(start, end):
+        """
+        Generate a random datetime between `start` and `end`
+        """
+        return start + datetime.timedelta(
+            # Get a random amount of seconds between `start` and `end`
+            seconds=random.randint(0, int((end - start).total_seconds())),
+        )
+
+    def addRandomGrades(self, studentNumber, assignmentNumber, number):
+        for i in range(number):
+            studentId = random.randint(0, studentNumber - 1)
+            assignmentId = random.randint(0, assignmentNumber - 1)
+            grade = random.randint(0, 10)
+            if grade == 0:
+                grade = None
+            self.__grades.addGrade(Grade(studentId, assignmentId, grade))
 
     # Manage Students menu
+
     def listStudents(self) -> List[Student]:
         """
         Returns a list of students sorted in ascending order by their IDs
@@ -241,6 +371,7 @@ class LogicComponent(ChangesHandler):
         self.__changesStack.endCommit()
 
     # Manage Assignments Menu
+
     def listAssignments(self) -> List[Assignment]:
         """
         Returns a list of assignments sorted in ascending order by their IDs
@@ -322,6 +453,7 @@ class LogicComponent(ChangesHandler):
         self.__changesStack.endCommit()
 
     # Give assignments menu
+
     def assignToStudent(self, studentId, assignmentId, newCommit=True) -> Grade:
         """
         Gives an assignment to a student

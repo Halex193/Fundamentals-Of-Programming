@@ -19,6 +19,7 @@ class TestLogicComponent(TestCase):
         self.logicComponent.populateRepository()
         self.assertTrue(len(self.logicComponent.listStudents()) != 0)
         self.assertTrue(len(self.logicComponent.listAssignments()) != 0)
+        self.assertTrue(len(self.logicComponent.listGrades()) != 0)
 
     def testAddStudent(self):
         student = self.logicComponent.addStudent('Ricky', '7')

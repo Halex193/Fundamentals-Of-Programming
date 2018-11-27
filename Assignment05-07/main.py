@@ -1,14 +1,12 @@
 """
 Main module
 """
-from datetime import datetime
-
 from menuUI import *
 
 
 def run():
     repository = Repository()
-    now = datetime.now()
+    now = datetime.datetime.now()
     currentDate = date(now.year, now.month, now.day)
     logicComponent = LogicComponent(repository, currentDate)
     logicComponent.populateRepository()
