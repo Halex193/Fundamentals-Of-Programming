@@ -34,7 +34,7 @@ class RepositoryWrapper:
             Assignment: self.__assignmentRepository
         }
 
-    def getRepository(self, repositoryType: Type[Union[Student, Grade, Assignment]]):
+    def getRepository(self, repositoryType: Type[Union[Student, Grade, Assignment]]) -> Repository:
         """
         Returns the Repository for the given item type
         """

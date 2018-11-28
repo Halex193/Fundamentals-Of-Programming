@@ -1,4 +1,5 @@
 import random
+from copy import copy
 from typing import List
 
 from logic.ControllerWrapper import ControllerWrapper
@@ -49,21 +50,18 @@ class StudentController:
             raise InvalidStudentId
         return foundStudent
 
-    # TODO check from here on
-    def updateStudent(self, studentId, name: str, group: str):
+    def updateStudent(self, studentId: int, name: str, group: int):
         """
         Updates the student data
         """
-        studentId = self.parseInt(studentId, InvalidStudentId)
-        group = self.parseInt(group, InvalidStudentGroup)
-        ValidationUtils.Student.validateStudent(Student(0, name, group))
+
         student = self.findStudent(studentId)
-        self.__changesStack.beginCommit()
-        self.__changesStack.addChange(ChangesStack.ItemRemoved(student))
-        student.setName(name)
-        student.setGroup(group)
-        self.__changesStack.addChange(ChangesStack.ItemAdded(student))
-        self.__changesStack.endCommit()
+        newStudent = copy(student)
+        newStudent.setName(name)
+        newStudent.setGroup(group)
+        ValidationUtils.Student.validateStudent(newStudent)
+        self.__studentRepository.update(newStudent)
+        self.__controllerWrapper.itemUpdated(student, newStudent)
 
     def addRandomStudents(self, number):
         firstNames = [
@@ -110,4 +108,4 @@ class StudentController:
             firstName = random.choice(firstNames)
             lastName = random.choice(lastNames)
             group = random.choice(groups)
-            self.addStudent(firstName + " " + lastName, group)
+            self.addStudent(i, firstName + " " + lastName, group)
