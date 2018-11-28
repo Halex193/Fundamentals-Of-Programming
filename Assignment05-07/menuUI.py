@@ -1,6 +1,7 @@
 """
 This is the menu UI module
 """
+import os
 
 from logic import *
 
@@ -51,15 +52,21 @@ class Menu:
             while not valid:
                 choice = input("Your choice: ")
                 if choice == Menu.exitKey:
+                    self.clearScreen()
                     return
                 if choice in self.choiceList:
                     try:
+                        self.clearScreen()
                         self.choiceList[choice]()
                     except CustomError as error:
                         MenuUI.handleCustomError(error)
                     valid = True
                 else:
                     print("Choice invalid")
+
+    @staticmethod
+    def clearScreen():
+        os.system('cls')
 
 
 class MainMenu(Menu):
@@ -280,7 +287,7 @@ class ManageAssignmentsMenu(Menu):
     def listAssignmentGrades(self):
         assignmentId = input("Assignment id: ")
         assignment = self.logicComponent.findAssignment(assignmentId)
-        print("List of grades for the assignment with description '" + assignment.getDescription() + ":")
+        print("List of grades for the assignment with description '" + assignment.getDescription() + "':")
         gradeList = self.logicComponent.listAssignmentGrades(assignmentId)
         if len(gradeList) == 0:
             print("No grades to show")
