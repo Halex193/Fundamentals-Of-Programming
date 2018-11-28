@@ -1,38 +1,41 @@
 """
 Validation module
 """
-from model import *
+from datetime import date
+
+from model.Assignment import Assignment
+from model.Student import Student
 
 
-class CustomError(Exception):
+class ValidationError(Exception):
     pass
 
 
-class InvalidStudentId(CustomError):
+class InvalidStudentId(ValidationError):
     pass
 
 
-class InvalidStudentName(CustomError):
+class InvalidStudentName(ValidationError):
     pass
 
 
-class InvalidStudentGroup(CustomError):
+class InvalidStudentGroup(ValidationError):
     pass
 
 
-class InvalidAssignmentId(CustomError):
+class InvalidAssignmentId(ValidationError):
     pass
 
 
-class InvalidAssignmentDescription(CustomError):
+class InvalidAssignmentDescription(ValidationError):
     pass
 
 
-class InvalidAssignmentDeadline(CustomError):
+class InvalidAssignmentDeadline(ValidationError):
     pass
 
 
-class InvalidGrade(CustomError):
+class InvalidGrade(ValidationError):
     pass
 
 

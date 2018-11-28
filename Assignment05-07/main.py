@@ -1,7 +1,7 @@
 """
 Main module
 """
-from menuUI import *
+from ui.menuUI import *
 
 
 def run():

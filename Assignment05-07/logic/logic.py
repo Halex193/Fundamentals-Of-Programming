@@ -6,101 +6,14 @@ import random
 from copy import copy
 from typing import Type, Union
 
-from repository import *
-from validation import *
+from logic.ValidationUtils import *
 
 
-class ChangesStack:
-    """
-    The stack of changes committed to the repository
-    """
 
-    class Change:
-        """
-        Defines a change
-        """
-
-        def __init__(self, item):
-            self.__item = copy(item)
-
-        def getItem(self):
-            return self.__item
-
-    class ItemAdded(Change):
-        pass
-
-    class ItemRemoved(Change):
-        pass
-
-    def __init__(self, changesHandler):
-        self.__changesStack = []
-        self.__currentCommit = []
-        self.__currentIndex = -1
-        self.__changesHandler = changesHandler
-
-    def beginCommit(self):
-        """
-        Initializes a new commit
-        """
-        self.__currentCommit = []
-
-    def endCommit(self):
-        """
-        Appends the current commit to the chages stack
-        """
-        self.__changesStack = self.__changesStack[:self.__currentIndex + 1]
-        self.__changesStack.append(self.__currentCommit)
-        self.__currentIndex += 1
-
-    def addChange(self, change: Change):
-        """
-        Adds the change to the current commit
-        """
-        self.__currentCommit.append(change)
-
-    def undo(self) -> bool:
-        """
-        Undoes the last operation
-        :return: True if succeeded, False otherwise
-        """
-        if self.__currentIndex == -1:
-            return False
-        commit: List[ChangesStack.Change] = self.__changesStack[self.__currentIndex]
-        self.__changesHandler.handleChanges(commit, reverse=True)
-        self.__currentIndex -= 1
-        return True
-
-    def redo(self) -> bool:
-        """
-        Reverses the last undo operation
-        :return: True if succeeded, False otherwise
-        """
-        if self.__currentIndex == len(self.__changesStack) - 1:
-            return False
-        commit: List[ChangesStack.Change] = self.__changesStack[self.__currentIndex + 1]
-        self.__changesHandler.handleChanges(commit, reverse=False)
-        self.__currentIndex += 1
-        return True
-
-    def clearStack(self):
-        """
-        Clears the changes stack
-        """
-        self.__changesStack = []
-        self.__currentCommit = []
-        self.__currentIndex = -1
-
-
-class ChangesHandler:
-    # @abstractmethod
-    def handleChanges(self, changesList: List[ChangesStack.Change], reverse: bool):
-        pass
-
-
-class DuplicateAssignment(CustomError):
+class DuplicateAssignment(ValidationError):
     pass
 
-
+# TODO generate controllers
 class LogicComponent(ChangesHandler):
     """
     Provides all the logic functions of the software
@@ -165,52 +78,7 @@ class LogicComponent(ChangesHandler):
 
         self.clearHistory()
 
-    def addRandomStudents(self, number):
-        firstNames = [
-            "Richard",
-            "Andrew",
-            "John",
-            "Ray",
-            "Ana",
-            "Jessica",
-            "Bob",
-            "Tyler",
-            "Lawrence",
-            "Kimberly",
-            "Scarlet",
-            "Diana",
-            "Sherlock",
-            "Damien",
-            "Kathy"
-        ]
-        lastNames = [
-            "Brossard",
-            "Crosland",
-            "Hutton",
-            "Holmes",
-            "Hudson",
-            "Watson",
-            "Heaton",
-            "Nelligan",
-            "Spears",
-            "Redman",
-            "Zion",
-            "Lambert"
-        ]
-        groups = [
-            911,
-            912,
-            913,
-            914,
-            915,
-            916,
-            917
-        ]
-        for i in range(number):
-            firstName = random.choice(firstNames)
-            lastName = random.choice(lastNames)
-            group = random.choice(groups)
-            self.addStudent(firstName + " " + lastName, group)
+
 
     def addRandomAssignments(self, number):
         descriptionTitles = [
@@ -297,78 +165,10 @@ class LogicComponent(ChangesHandler):
 
     # Manage Students menu
 
-    def listStudents(self) -> List[Student]:
-        """
-        Returns a list of students sorted in ascending order by their IDs
-        """
-        return sorted([student for student in self.__students], key=lambda student: student.getStudentId())
 
-    def addStudent(self, name: str, group: str) -> Student:
-        """
-        Adds a student to the repository
-        """
-        group = self.parseInt(group, InvalidStudentGroup)
-        student = Student(0, name, group)
-        ValidationUtils.Student.validateStudent(student)
 
-        newStudent = self.__students.addStudent(student)
 
-        self.__changesStack.beginCommit()
-        self.__changesStack.addChange(ChangesStack.ItemAdded(newStudent))
-        self.__changesStack.endCommit()
 
-        return newStudent
-
-    @staticmethod
-    def parseInt(string: str, errorType: type) -> int:
-        """
-        Parses a number to an integer. If the conversion fails, raises the specified exception
-        """
-        try:
-            return int(string)
-        except ValueError:
-            raise errorType()
-
-    def removeStudent(self, studentId: str):
-        """
-        Removes a student from the repository
-        """
-        studentId = self.parseInt(studentId, InvalidStudentId)
-        student = self.findStudent(studentId)
-        self.__changesStack.beginCommit()
-        self.__changesStack.addChange(ChangesStack.ItemRemoved(student))
-
-        del self.__students[student]
-        gradeList = self.__grades.getStudentGrades(student)
-        for grade in gradeList:
-            self.__changesStack.addChange(ChangesStack.ItemRemoved(grade))
-            del self.__grades[grade]
-        self.__changesStack.endCommit()
-
-    def findStudent(self, studentId) -> Student:
-        """
-        Searches a student and returns it if found. Raises InvalidStudentId if not
-        """
-        studentId = self.parseInt(studentId, InvalidStudentId)
-        if studentId not in [student.getStudentId() for student in self.__students]:
-            raise InvalidStudentId
-        else:
-            return self.__students[studentId]
-
-    def updateStudent(self, studentId, name: str, group: str):
-        """
-        Updates the student data
-        """
-        studentId = self.parseInt(studentId, InvalidStudentId)
-        group = self.parseInt(group, InvalidStudentGroup)
-        ValidationUtils.Student.validateStudent(Student(0, name, group))
-        student = self.findStudent(studentId)
-        self.__changesStack.beginCommit()
-        self.__changesStack.addChange(ChangesStack.ItemRemoved(student))
-        student.setName(name)
-        student.setGroup(group)
-        self.__changesStack.addChange(ChangesStack.ItemAdded(student))
-        self.__changesStack.endCommit()
 
     # Manage Assignments Menu
 
