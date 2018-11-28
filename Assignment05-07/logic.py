@@ -513,7 +513,7 @@ class LogicComponent(ChangesHandler):
         Grades the student at the given assignment
         :param studentId: The ID of the student
         :param assignmentId: The ID of the assignment
-        :param grade: THe grade of the assignment, an integer between 1 and 10
+        :param grade: The grade of the assignment, an integer between 1 and 10
         :raises InvalidGrade: If an invalid grade is given
         :raises InvalidAssignmentId: If the student has not been given the assignment
         """
