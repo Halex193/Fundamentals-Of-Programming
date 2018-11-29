@@ -37,7 +37,7 @@ class AssignmentController:
         Removes an assignment from the repository
         """
         assignment = self.findAssignment(assignmentId)
-        self.__assignmentRepository.delete(assignment)
+        self.__assignmentRepository.deleteItem(assignment)
         self.__controllerWrapper.itemRemoved(assignment)
 
     def findAssignment(self, assignmentId: int) -> Assignment:
@@ -59,7 +59,7 @@ class AssignmentController:
         newAssignment.setDescription(description)
         newAssignment.setDeadline(deadline)
         ValidationUtils.Assignment.validateAssignment(newAssignment)
-        self.__assignmentRepository.update(newAssignment)
+        self.__assignmentRepository.updateItem(newAssignment)
         self.__controllerWrapper.itemUpdated(assignment, newAssignment)
 
     def addRandomAssignments(self, number):

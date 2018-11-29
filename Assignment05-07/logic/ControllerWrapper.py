@@ -71,7 +71,7 @@ class ControllerWrapper(ChangesHandler):
             linkedGrades = [grade for grade in gradeList if self.__gradeLinked(grade, item)]
             for grade in linkedGrades:
                 self.__changesStack.addChange(ChangesStack.ItemRemoved(grade))
-                gradeRepository.delete(grade)
+                gradeRepository.deleteItem(grade)
         self.__changesStack.endCommit()
 
     @staticmethod
@@ -107,7 +107,7 @@ class ControllerWrapper(ChangesHandler):
         self.__repositoryWrapper.getRepository(type(item)).addItem(item)
 
     def removeItem(self, item):
-        self.__repositoryWrapper.getRepository(type(item)).delete(item)
+        self.__repositoryWrapper.getRepository(type(item)).deleteItem(item)
 
     def populateRepository(self):
         """

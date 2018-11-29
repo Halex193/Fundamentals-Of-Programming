@@ -37,7 +37,7 @@ class StudentController:
         Removes a student from the repository
         """
         student = self.findStudent(studentId)
-        self.__studentRepository.delete(student)
+        self.__studentRepository.deleteItem(student)
         self.__controllerWrapper.itemRemoved(student)
 
     def findStudent(self, studentId: int) -> Student:
@@ -60,7 +60,7 @@ class StudentController:
         newStudent.setName(name)
         newStudent.setGroup(group)
         ValidationUtils.Student.validateStudent(newStudent)
-        self.__studentRepository.update(newStudent)
+        self.__studentRepository.updateItem(newStudent)
         self.__controllerWrapper.itemUpdated(student, newStudent)
 
     def addRandomStudents(self, number):

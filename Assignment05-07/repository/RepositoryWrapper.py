@@ -23,10 +23,15 @@ class RepositoryWrapper:
     Holds all the program data
     """
 
-    def __init__(self):
-        self.__studentRepository = Repository(Student)
-        self.__gradeRepository = Repository(Grade)
-        self.__assignmentRepository = Repository(Assignment)
+    def __init__(self, type: str):
+        if type == 'inmemory':
+            self.__studentRepository = Repository(Student)
+            self.__gradeRepository = Repository(Grade)
+            self.__assignmentRepository = Repository(Assignment)
+        elif type == 'text':
+            pass
+        elif type == 'binary':
+            pass
 
         self.__repositories = {
             Student: self.__studentRepository,

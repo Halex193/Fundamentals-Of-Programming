@@ -31,10 +31,10 @@ class Repository:
                 return copy(collectionItem)
         return None
 
-    def update(self, item):
+    def updateItem(self, item):
         for i in range(len(self.__collection)):
             if self.__collection[i] == item:
                 self.__collection[i] = item
 
-    def delete(self, item):
+    def deleteItem(self, item):
         self.__collection.remove(item)
