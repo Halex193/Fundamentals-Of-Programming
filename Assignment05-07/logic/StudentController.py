@@ -2,18 +2,17 @@ import random
 from copy import copy
 from typing import List
 
-from logic.ControllerWrapper import ControllerWrapper
-from logic.ValidationUtils import InvalidStudentGroup, ValidationUtils, InvalidStudentId
+from logic.ChangesCallback import ChangesCallback
 from model.Student import Student
-from logic.ChangesStack import ChangesStack
+from model.ValidationUtils import ValidationUtils, InvalidStudentId
 from repository.Repository import Repository
 
 
 class StudentController:
 
-    def __init__(self, studentRepository: Repository, controllerWrapper: ControllerWrapper):
+    def __init__(self, studentRepository: Repository, changesCallback: ChangesCallback):
         self.__studentRepository = studentRepository
-        self.__controllerWrapper = controllerWrapper
+        self.__changesCallback = changesCallback
 
     def listStudents(self) -> List[Student]:
         """
@@ -28,7 +27,7 @@ class StudentController:
         student = Student(studentId, name, group)
         ValidationUtils.Student.validateStudent(student)
         self.__studentRepository.addItem(student)
-        self.__controllerWrapper.itemAdded(student)
+        self.__changesCallback.itemAdded(student)
 
         return student
 
@@ -38,7 +37,7 @@ class StudentController:
         """
         student = self.findStudent(studentId)
         self.__studentRepository.deleteItem(student)
-        self.__controllerWrapper.itemRemoved(student)
+        self.__changesCallback.itemRemoved(student)
 
     def findStudent(self, studentId: int) -> Student:
         """
@@ -61,7 +60,7 @@ class StudentController:
         newStudent.setGroup(group)
         ValidationUtils.Student.validateStudent(newStudent)
         self.__studentRepository.updateItem(newStudent)
-        self.__controllerWrapper.itemUpdated(student, newStudent)
+        self.__changesCallback.itemUpdated(student, newStudent)
 
     def addRandomStudents(self, number):
         firstNames = [

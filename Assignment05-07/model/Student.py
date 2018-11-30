@@ -24,7 +24,7 @@ class Student:
         self.__group = group
 
     def __str__(self):
-        return str(self.__studentId) + " - " + self.__name + " - " + str(self.__group)
+        return "{:d} - {} - {}".format(self.__studentId, self.__name, self.__group)
 
     def __eq__(self, other):
         if id(self) == id(other):

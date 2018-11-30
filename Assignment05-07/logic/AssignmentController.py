@@ -3,17 +3,17 @@ import random
 from copy import copy
 from typing import List
 
-from logic.ControllerWrapper import ControllerWrapper
-from logic.ValidationUtils import ValidationUtils, InvalidAssignmentId
+from logic.ChangesCallback import ChangesCallback
 from model.Assignment import Assignment
+from model.ValidationUtils import ValidationUtils, InvalidAssignmentId
 from repository.Repository import Repository
 
 
 class AssignmentController:
 
-    def __init__(self, assignmentRepository: Repository, controllerWrapper: ControllerWrapper):
+    def __init__(self, assignmentRepository: Repository, changesCallback: ChangesCallback):
         self.__assignmentRepository = assignmentRepository
-        self.__controllerWrapper = controllerWrapper
+        self.__changesCallback = changesCallback
 
     def listAssignments(self) -> List[Assignment]:
         """
@@ -28,7 +28,7 @@ class AssignmentController:
         assignment = Assignment(assignmentId, description, deadline)
         ValidationUtils.Assignment.validateAssignment(assignment)
         self.__assignmentRepository.addItem(assignment)
-        self.__controllerWrapper.itemAdded(assignment)
+        self.__changesCallback.itemAdded(assignment)
 
         return assignment
 
@@ -38,7 +38,7 @@ class AssignmentController:
         """
         assignment = self.findAssignment(assignmentId)
         self.__assignmentRepository.deleteItem(assignment)
-        self.__controllerWrapper.itemRemoved(assignment)
+        self.__changesCallback.itemRemoved(assignment)
 
     def findAssignment(self, assignmentId: int) -> Assignment:
         """
@@ -60,7 +60,7 @@ class AssignmentController:
         newAssignment.setDeadline(deadline)
         ValidationUtils.Assignment.validateAssignment(newAssignment)
         self.__assignmentRepository.updateItem(newAssignment)
-        self.__controllerWrapper.itemUpdated(assignment, newAssignment)
+        self.__changesCallback.itemUpdated(assignment, newAssignment)
 
     def addRandomAssignments(self, number):
         descriptionTitles = [

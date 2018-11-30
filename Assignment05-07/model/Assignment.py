@@ -27,7 +27,7 @@ class Assignment:
         self.__deadline = deadline
 
     def __str__(self):
-        return str(self.__assignmentId) + " - " + self.__description + " - " + str(self.__deadline)
+        return "{:d} - {} - {:%d.%m.%Y}".format(self.__assignmentId, self.__description, self.__deadline)
 
     def __eq__(self, other):
         if id(self) == id(other):

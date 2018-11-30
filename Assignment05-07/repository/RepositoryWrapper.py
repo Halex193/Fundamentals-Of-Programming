@@ -6,18 +6,6 @@ from model.Assignment import Assignment
 from repository.Repository import Repository
 
 
-class RepositoryError(RuntimeError):
-    pass
-
-
-class DuplicateItemError(RepositoryError):
-    pass
-
-
-class RepositoryTypeError(RepositoryError):
-    pass
-
-
 class RepositoryWrapper:
     """
     Holds all the program data

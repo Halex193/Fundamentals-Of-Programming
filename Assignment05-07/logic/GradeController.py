@@ -1,23 +1,24 @@
 # TODO finish this
 import datetime
-from random import random
+import random
+from typing import List, Tuple
 
-from logic.ControllerWrapper import ControllerWrapper
-from logic.ValidationUtils import InvalidStudentId, InvalidAssignmentId
+from logic.ChangesCallback import ChangesCallback
 from model.Assignment import Assignment
 from model.Grade import Grade
 from model.Student import Student
+from model.ValidationUtils import InvalidStudentId, InvalidAssignmentId
 from repository.Repository import Repository
 
 
 class GradeController:
 
     def __init__(self, studentRepository: Repository, gradeRepository: Repository,
-                 assignmentRepository: Repository, currentDate: datetime.date, controllerWrapper: ControllerWrapper):
+                 assignmentRepository: Repository, currentDate: datetime.date, changesCallback: ChangesCallback):
         self.__studentRepository = studentRepository
         self.__gradeRepository = gradeRepository
         self.__assignmentRepository = assignmentRepository
-        self.__controllerWrapper = controllerWrapper
+        self.__changesCallback = changesCallback
         self.__currentDate = currentDate
 
     def findStudent(self, studentId: int) -> Student:

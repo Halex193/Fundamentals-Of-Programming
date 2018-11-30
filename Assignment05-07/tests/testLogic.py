@@ -2,7 +2,7 @@ from typing import List
 from unittest import TestCase
 from repository import Repository
 from logic import LogicComponent, ChangesHandler
-from logic.ValidationUtils import *
+from model.ValidationUtils import *
 
 
 class TestLogicComponent(TestCase):

@@ -3,7 +3,7 @@ Test model module
 """
 from unittest import TestCase
 
-from logic.ValidationUtils import *
+from model.ValidationUtils import *
 
 
 class TestStudent(TestCase):

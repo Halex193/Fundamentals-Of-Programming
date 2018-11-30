@@ -1,5 +1,6 @@
 from copy import copy
-from repository.RepositoryWrapper import DuplicateItemError, RepositoryTypeError
+
+from repository.RepositoryError import RepositoryTypeError, DuplicateItemError
 
 
 class Repository:
@@ -18,7 +19,7 @@ class Repository:
     def addItem(self, item):
         self.checkType(item)
         if item in self.__collection:
-            raise DuplicateItemError()
+            raise DuplicateItemError(self.__itemType)
         self.__collection.append(item)
 
     def getItems(self):

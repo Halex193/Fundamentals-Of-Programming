@@ -1,33 +1,26 @@
-from repository.Repository import Repository
+import pickle
+
+from repository.FileRepository import FileRepository
 
 
-class BinaryRepository(Repository):
+class BinaryRepository(FileRepository):
 
-    def addItem(self, item):
-        self.__getList()
-        Repository.addItem(self, item)
-        self.__updateList()
+    def __loadList(self):
+        file = None
+        try:
+            file = open(self.__fileName, 'rb')
+            self.__collection = pickle.load(file)
+        except FileNotFoundError:
+            self.__collection = []
+        finally:
+            if file is not None:
+                file.close()
 
-    def updateItem(self, item):
-        self.__getList()
-        Repository.updateItem(self, item)
-        self.__updateList()
-
-    def getItems(self):
-        self.__getList()
-        Repository.getItems(self)
-
-    def getItem(self, item):
-        self.__getList()
-        Repository.getItem(self, item)
-
-    def deleteItem(self, item):
-        self.__getList()
-        Repository.deleteItem(self, item)
-        self.__updateList()
-
-    def __getList(self):
-        pass
-
-    def __updateList(self):
-        pass
+    def __saveList(self):
+        file = None
+        try:
+            file = open(self.__fileName, 'wb')
+            pickle.dump(self.__collection, file)
+        finally:
+            if file is not None:
+                file.close()

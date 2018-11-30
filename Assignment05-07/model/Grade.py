@@ -21,10 +21,8 @@ class Grade:
         self.__grade = grade
 
     def __str__(self):
-        gradeText = str(self.__grade)
-        if self.__grade is None:
-            gradeText = "No grade"
-        return str(self.__studentId) + " - " + str(self.__assignmentId) + " - " + gradeText
+        gradeText = str(self.__grade) if self.__grade is not None else "No grade"
+        return "{:d} - {:d} - {}".format(self.__studentId, self.__assignmentId, gradeText)
 
     def __eq__(self, other):
         if id(self) == id(other):

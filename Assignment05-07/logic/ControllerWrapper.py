@@ -2,6 +2,7 @@ from datetime import date
 from typing import List, Type, Union
 
 from logic.AssignmentController import AssignmentController
+from logic.ChangesCallback import ChangesCallback
 from logic.ChangesStack import ChangesStack, ChangesHandler
 from logic.GradeController import GradeController
 from logic.StudentController import StudentController
@@ -11,7 +12,7 @@ from model.Student import Student
 from repository.RepositoryWrapper import RepositoryWrapper
 
 
-class ControllerWrapper(ChangesHandler):
+class ControllerWrapper(ChangesHandler, ChangesCallback):
     def __init__(self, repositoryWrapper: RepositoryWrapper, currentDate: date):
         self.__repositoryWrapper = repositoryWrapper
         self.__changesStack = ChangesStack(self)
@@ -23,33 +24,6 @@ class ControllerWrapper(ChangesHandler):
         self.__assignmentRepository = AssignmentController(repositoryWrapper.getRepository(Assignment), self)
         self.__gradeController = GradeController(studentRepository, gradeRepository,
                                                  assignmentRepository, currentDate, self)
-
-    @staticmethod
-    def parseInt(string: str, errorType: type) -> int:
-        """
-        Parses a number to an integer. If the conversion fails, raises the specified exception
-        """
-        try:
-            return int(string)
-        except ValueError:
-            raise errorType()
-
-    @staticmethod
-    def parseDate(string: str, errorType: type) -> date:
-        """
-        Parses a string to a date. Valid format: day.month.year .
-        If the conversion fails, raises the specified exception
-        """
-        try:
-            symbols = string.split('.')
-            if len(symbols) != 3:
-                raise errorType()
-            day = int(symbols[0])
-            month = int(symbols[1])
-            year = int(symbols[2])
-            return date(year, month, day)
-        except ValueError:
-            raise errorType()
 
     def itemAdded(self, item):
         self.__changesStack.beginCommit()
