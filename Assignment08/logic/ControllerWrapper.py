@@ -19,10 +19,30 @@ class ControllerWrapper(ChangesHandler):
         studentRepository = repositoryWrapper.getRepository(Student)
         gradeRepository = repositoryWrapper.getRepository(Grade)
         assignmentRepository = repositoryWrapper.getRepository(Assignment)
-        self.__studentController = StudentController(studentRepository, self)
-        self.__assignmentRepository = AssignmentController(repositoryWrapper.getRepository(Assignment), self)
-        self.__gradeController = GradeController(studentRepository, gradeRepository,
-                                                 assignmentRepository, currentDate, self)
+
+        self.__studentController = StudentController(
+            studentRepository,
+            self.__changesStack,
+            self.cascadeDelete
+        )
+        self.__assignmentController = AssignmentController(
+            repositoryWrapper.getRepository(Assignment),
+            self.__changesStack,
+            self.cascadeDelete
+        )
+        self.__gradeController = GradeController(
+            studentRepository, gradeRepository,
+            assignmentRepository, currentDate, self.__changesStack
+        )
+
+    def getStudentController(self) -> StudentController:
+        return self.__studentController
+
+    def getGradeController(self) -> GradeController:
+        return self.__gradeController
+
+    def getAssignmentController(self) -> AssignmentController:
+        return self.__assignmentController
 
     def cascadeDelete(self, item):
         if type(item) is Student or Assignment:
@@ -46,7 +66,7 @@ class ControllerWrapper(ChangesHandler):
         Adds default data to the repository
         """
         self.__studentController.addRandomStudents(50)
-        self.__assignmentRepository.addRandomAssignments(50)
+        self.__assignmentController.addRandomAssignments(50)
         self.__gradeController.addRandomGrades(40, 40, 50)
 
         self.clearHistory()

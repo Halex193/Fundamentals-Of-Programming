@@ -13,9 +13,10 @@ from repository.Repository import Repository
 
 class AssignmentController:
 
-    def __init__(self, assignmentRepository: Repository, changesStack: ChangesStack):
+    def __init__(self, assignmentRepository: Repository, changesStack: ChangesStack, deleteCallback: callable = None):
         self.__assignmentRepository = assignmentRepository
         self.__changesStack = changesStack
+        self.__deleteCallback = deleteCallback
 
     def listAssignments(self) -> List[Assignment]:
         """
@@ -34,7 +35,7 @@ class AssignmentController:
 
         return assignment
 
-    def removeAssignment(self, assignmentId: int, deleteCallback: function = None):
+    def removeAssignment(self, assignmentId: int):
         """
         Removes an assignment from the repository
         """
@@ -42,8 +43,8 @@ class AssignmentController:
         self.__assignmentRepository.deleteItem(assignment)
         self.__changesStack.beginCommit()
         self.__changesStack.addChange(ChangesStack.ItemRemoved(assignment))
-        if deleteCallback is not None:
-            deleteCallback(assignment)
+        if self.__deleteCallback is not None:
+            self.__deleteCallback(assignment)
         else:
             self.__changesStack.endCommit()
 

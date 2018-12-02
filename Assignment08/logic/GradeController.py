@@ -30,7 +30,7 @@ class AssignmentWithAverageDTO:
         self.__assignment = assignment
         self.__average = average
 
-    def getStudent(self) -> Assignment:
+    def getAssignment(self) -> Assignment:
         return self.__assignment
 
     def getAverage(self) -> float:
@@ -225,7 +225,7 @@ class GradeController:
                 DTOList.append(AssignmentWithAverageDTO(assignment, average))
         return sorted(DTOList, key=lambda dto: dto.getAverage(), reverse=True)
 
-    def getGrade(self, studentId: int, assignmentId: int):
+    def getGrade(self, studentId: int, assignmentId: int) -> Grade:
         self.findStudent(studentId)
         self.findAssignment(assignmentId)
         grade = Grade(studentId, assignmentId)
@@ -250,9 +250,15 @@ class GradeController:
 
     def addRandomGrades(self, studentNumber: int, assignmentNumber: int, number: int):
         for i in range(number):
-            studentId = random.randint(0, studentNumber - 1)
-            assignmentId = random.randint(0, assignmentNumber - 1)
             grade = random.randint(0, 10)
             if grade == 0:
                 grade = None
-            self.__gradeRepository.addItem(Grade(studentId, assignmentId, grade))
+            valid = False
+            while not valid:
+                studentId = random.randint(0, studentNumber - 1)
+                assignmentId = random.randint(0, assignmentNumber - 1)
+                try:
+                    self.__gradeRepository.addItem(Grade(studentId, assignmentId, grade))
+                    valid = True
+                except DuplicateItemError:
+                    pass

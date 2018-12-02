@@ -4,12 +4,14 @@ This is the menu UI module
 import os
 from datetime import date
 
-from logic import *
-from logic.AssignmentController import AssignmentController
+from logic.ControllerError import *
 from logic.ControllerWrapper import ControllerWrapper
-from logic.StudentController import StudentController
 from model.Assignment import Assignment
+from model.Grade import Grade
 from model.Student import Student
+from model.ValidationError import *
+from repository.RepositoryError import *
+from utils.TypeParser import TypeParser
 
 
 class MenuUI:
@@ -22,19 +24,38 @@ class MenuUI:
 
     @classmethod
     def handleCustomError(cls, error):
+
+        def getDuplicateItemMessage(genericError):
+            if type(genericError) is not DuplicateItemError:
+                return ''
+            return {
+                Student: "Student already exists",
+                Grade: "Student was already given this assignment",
+                Assignment: "Assignment already exists"
+            }[error.getItemType()]
+
         errorTypes = {
-            CustomError: "Invalid data",
+            DuplicateItemError: getDuplicateItemMessage(error),
             InvalidStudentId: "Student id is invalid",
             InvalidStudentGroup: "Student group is invalid",
             InvalidAssignmentId: "Assignment id is invalid",
             InvalidAssignmentDeadline: "Assignment deadline is invalid",
-            DuplicateAssignment: "Assignment was already given to student",
-            InvalidGrade: "Grade must be an integer between 0 and 10"
+            InvalidGrade: "Grade must be an integer between 0 and 10",
+            GroupNotFound: "There is no student with the given group",
+            AssignmentIdNotFound: "There is no assignment with the given id",
+            StudentIdNotFound: "There is no student with the given id",
+            GradeNotFound: "Student was not given the specified assignment",
+            GradeAlreadySet: "The student was already graded for the assignment"
+
         }
         if type(error) in errorTypes:
             print(errorTypes[type(error)])
         else:
             raise error
+
+    @staticmethod
+    def gradeToStr(grade) -> str:
+        return str(grade.getGrade()) if grade.getGrade() is not None else "No grade"
 
 
 class Menu:
@@ -64,7 +85,11 @@ class Menu:
                     try:
                         self.clearScreen()
                         self.choiceList[choice]()
-                    except CustomError as error:
+                    except ValidationError as error:
+                        MenuUI.handleCustomError(error)
+                    except ControllerError as error:
+                        MenuUI.handleCustomError(error)
+                    except RepositoryError as error:
                         MenuUI.handleCustomError(error)
                     valid = True
                 else:
@@ -113,11 +138,13 @@ class MainMenu(Menu):
         AssignMenu(self.controllerWrapper).showMenu()
 
     def gradeStudent(self):
+        gradeController = self.controllerWrapper.getGradeController()
         studentId = input("Choose student id: ")
-        student = self.controllerWrapper.findStudent(studentId)
+        studentId = TypeParser.parseInt(studentId, InvalidStudentId)
+        student = gradeController.findStudent(studentId)
         print("You are grading the student with name " + student.getName() + " from group " + str(
             student.getGroup()))
-        assignmentList = self.controllerWrapper.getStudentUngradedAssignments(studentId)
+        assignmentList = gradeController.getStudentUngradedAssignments(studentId)
         if len(assignmentList) == 0:
             print("The student has no ungraded assignments")
             return
@@ -125,13 +152,15 @@ class MainMenu(Menu):
         for assignment in assignmentList:
             print(ManageAssignmentsMenu.assignmentToStr(assignment))
         assignmentId = input("Choose assignment id: ")
-        assignment = self.controllerWrapper.findAssignment(assignmentId)
-        self.controllerWrapper.assignmentGradable(studentId, assignmentId)
+        assignmentId = TypeParser.parseInt(assignmentId, InvalidAssignmentId)
+        assignment = gradeController.findAssignment(assignmentId)
+        gradeController.validateGrading(studentId, assignmentId)
         print(
             "You are grading the assignment with description '" + assignment.getDescription() +
             "' and deadline " + ManageAssignmentsMenu.dateToStr(assignment.getDeadline()))
         grade = input("Choose grade: ")
-        self.controllerWrapper.grade(studentId, assignmentId, grade)
+        grade = TypeParser.parseInt(grade, InvalidGrade)
+        gradeController.grade(studentId, assignmentId, grade)
         print("Assignment was graded")
 
     def showStatistics(self):
@@ -154,8 +183,8 @@ class MainMenu(Menu):
         ManageStudentsMenu(self.controllerWrapper).listStudents()
         print("\nGRADES")
         print("\nStudentId - AssignmentId - Grade")
-        for grade in self.controllerWrapper.listGrades():
-            print(str(grade.getStudentId()) + " - " + str(grade.getAssignmentId()) + " - " + str(grade))
+        for grade in self.controllerWrapper.getGradeController().listGrades():
+            print(grade)
         print("\nASSIGNMENTS")
         ManageAssignmentsMenu(self.controllerWrapper).listAssignments()
 
@@ -163,8 +192,9 @@ class MainMenu(Menu):
 class ManageStudentsMenu(Menu):
     menuName = "Manage students"
 
-    def __init__(self, studentController: StudentController):
-        super().__init__(studentController)
+    def __init__(self, controllerWrapper: ControllerWrapper):
+        super().__init__(controllerWrapper)
+        self.studentController = controllerWrapper.getStudentController()
 
         self.optionList = [
             "1. List students",
@@ -183,7 +213,7 @@ class ManageStudentsMenu(Menu):
         }
 
     def listStudents(self):
-        studentList = self.controllerWrapper.listStudents()
+        studentList = self.studentController.listStudents()
         print("\nID - Name - Group")
         for student in studentList:
             print(self.studentToStr(student))
@@ -193,31 +223,38 @@ class ManageStudentsMenu(Menu):
         return str(student.getStudentId()) + " - " + student.getName() + " - " + str(student.getGroup())
 
     def addStudent(self):
+        studentId = input("Student's id: ")
+        studentId = TypeParser.parseInt(studentId, InvalidStudentId)
         name = input("Student's name: ")
         group = input("Student's group: ")
-        self.controllerWrapper.addStudent(name, group)
+        group = TypeParser.parseInt(group, InvalidStudentGroup)
+        self.studentController.addStudent(studentId, name, group)
         print("Student added")
 
     def removeStudent(self):
         studentId = input("Student id: ")
-        self.controllerWrapper.removeStudent(studentId)
+        studentId = TypeParser.parseInt(studentId, InvalidStudentId)
+        self.studentController.removeStudent(studentId)
         print("Student removed")
 
     def updateStudent(self):
         studentId = input("Student id: ")
-        student = self.controllerWrapper.findStudent(studentId)
+        studentId = TypeParser.parseInt(studentId, InvalidStudentId)
+        student = self.studentController.findStudent(studentId)
         print("You are modifying the student with name " + student.getName() + " from group " + str(
             student.getGroup()))
         name = input("Student's new name: ")
         group = input("Student's new group: ")
-        self.controllerWrapper.updateStudent(studentId, name, group)
+        group = TypeParser.parseInt(group, InvalidStudentGroup)
+        self.studentController.updateStudent(studentId, name, group)
         print("Student information updated")
 
     def listStudentGrades(self):
         studentId = input("Student id: ")
-        student = self.controllerWrapper.findStudent(studentId)
+        studentId = TypeParser.parseInt(studentId, InvalidStudentId)
+        student = self.studentController.findStudent(studentId)
         print(student.getName() + "'s grades are:")
-        gradeList = self.controllerWrapper.listStudentGrades(studentId)
+        gradeList = self.controllerWrapper.getGradeController().listStudentGrades(studentId)
         if len(gradeList) == 0:
             print("No grades to show")
         else:
@@ -227,14 +264,16 @@ class ManageStudentsMenu(Menu):
 
     @staticmethod
     def gradeToStr(grade):
-        return str(grade) + " - " + str(grade.getAssignmentId())
+        gradeString = MenuUI.gradeToStr(grade)
+        return gradeString + " - " + str(grade.getAssignmentId())
 
 
 class ManageAssignmentsMenu(Menu):
     menuName = "Manage assignments"
 
-    def __init__(self, assignmentController: AssignmentController):
-        super().__init__(assignmentController)
+    def __init__(self, controllerWrapper: ControllerWrapper):
+        super().__init__(controllerWrapper)
+        self.assignmentController = controllerWrapper.getAssignmentController()
 
         self.optionList = [
             "1. List assignments",
@@ -253,31 +292,37 @@ class ManageAssignmentsMenu(Menu):
         }
 
     def listAssignments(self):
-        assignmentList = self.controllerWrapper.listAssignments()
+        assignmentList = self.assignmentController.listAssignments()
         print("\nID - Description - Deadline")
         for assignment in assignmentList:
             print(self.assignmentToStr(assignment))
 
     def addAssignment(self):
+        assignmentId = input("Assignment's id: ")
+        assignmentId = TypeParser.parseInt(assignmentId, InvalidAssignmentId)
         description = input("Assignment's description: ")
         deadline = input("Assignment's deadline (format: day.month.year): ")
-        self.controllerWrapper.addAssignment(description, deadline)
+        deadline = TypeParser.parseDate(deadline, InvalidAssignmentDeadline)
+        self.assignmentController.addAssignment(assignmentId, description, deadline)
         print("Assignment added")
 
     def removeAssignment(self):
         assignmentId = input("Assignment id: ")
-        self.controllerWrapper.removeAssignment(assignmentId)
+        assignmentId = TypeParser.parseInt(assignmentId, InvalidAssignmentId)
+        self.assignmentController.removeAssignment(assignmentId)
         print("Assignment removed")
 
     def updateAssignment(self):
         assignmentId = input("Assignment id: ")
-        assignment = self.controllerWrapper.findAssignment(assignmentId)
+        assignmentId = TypeParser.parseInt(assignmentId, InvalidAssignmentId)
+        assignment = self.assignmentController.findAssignment(assignmentId)
         print(
             "You are modifying the assignment with description '" + assignment.getDescription() +
             "' and deadline " + ManageAssignmentsMenu.dateToStr(assignment.getDeadline()))
         description = input("Assignment's new description: ")
         deadline = input("Assignment's new deadline (format: day.month.year): ")
-        self.controllerWrapper.updateAssignment(assignmentId, description, deadline)
+        deadline = TypeParser.parseDate(deadline, InvalidAssignmentDeadline)
+        self.assignmentController.updateAssignment(assignmentId, description, deadline)
         print("Assignment information updated")
 
     @staticmethod
@@ -292,9 +337,10 @@ class ManageAssignmentsMenu(Menu):
 
     def listAssignmentGrades(self):
         assignmentId = input("Assignment id: ")
-        assignment = self.controllerWrapper.findAssignment(assignmentId)
+        assignmentId = TypeParser.parseInt(assignmentId, InvalidAssignmentId)
+        assignment = self.assignmentController.findAssignment(assignmentId)
         print("List of grades for the assignment with description '" + assignment.getDescription() + "':")
-        gradeList = self.controllerWrapper.listAssignmentGrades(assignmentId)
+        gradeList = self.controllerWrapper.getGradeController().listAssignmentGrades(assignmentId)
         if len(gradeList) == 0:
             print("No grades to show")
         else:
@@ -304,7 +350,8 @@ class ManageAssignmentsMenu(Menu):
 
     @staticmethod
     def gradeToStr(grade):
-        return str(grade) + " - " + str(grade.getStudentId())
+        gradeString = MenuUI.gradeToStr(grade)
+        return gradeString + " - " + str(grade.getStudentId())
 
 
 class AssignMenu(Menu):
@@ -312,6 +359,7 @@ class AssignMenu(Menu):
 
     def __init__(self, controllerWrapper: ControllerWrapper):
         super().__init__(controllerWrapper)
+        self.gradeController = controllerWrapper.getGradeController()
 
         self.optionList = [
             "1. Give assignment to student",
@@ -325,26 +373,30 @@ class AssignMenu(Menu):
 
     def assignToStudent(self):
         studentId = input("Choose student id: ")
-        student = self.controllerWrapper.findStudent(studentId)
+        studentId = TypeParser.parseInt(studentId, InvalidStudentId)
+        student = self.gradeController.findStudent(studentId)
         print("You giving an assignment to the student with name " + student.getName() + " from group " + str(
             student.getGroup()))
         assignmentId = input("Choose assignment id: ")
-        assignment = self.controllerWrapper.findAssignment(assignmentId)
+        assignmentId = TypeParser.parseInt(assignmentId, InvalidAssignmentId)
+        assignment = self.gradeController.findAssignment(assignmentId)
         print(
             "You are giving the assignment with description '" + assignment.getDescription() +
             "' and deadline " + ManageAssignmentsMenu.dateToStr(assignment.getDeadline()))
-        self.controllerWrapper.assignToStudent(studentId, assignmentId)
+        self.gradeController.assignToStudent(studentId, assignmentId)
         print("Assignment was given")
 
     def assignToGroup(self):
         group = input("Choose group: ")
-        self.controllerWrapper.checkGroupExistence(group)
+        group = TypeParser.parseInt(group, InvalidStudentGroup)
+        self.gradeController.checkGroupExistence(group)
         assignmentId = input("Choose assignment id: ")
-        assignment = self.controllerWrapper.findAssignment(assignmentId)
+        assignmentId = TypeParser.parseInt(assignmentId, InvalidAssignmentId)
+        assignment = self.gradeController.findAssignment(assignmentId)
         print(
             "You are giving the assignment with description '" + assignment.getDescription() +
             "' and deadline " + ManageAssignmentsMenu.dateToStr(assignment.getDeadline()))
-        self.controllerWrapper.assignToGroup(group, assignmentId)
+        self.gradeController.assignToGroup(group, assignmentId)
         print("Assignments were given")
 
 
@@ -353,6 +405,7 @@ class StatisticsMenu(Menu):
 
     def __init__(self, controllerWrapper: ControllerWrapper):
         super().__init__(controllerWrapper)
+        self.gradeController = controllerWrapper.getGradeController()
 
         self.optionList = [
             "1. Students with specified assignment, ordered alphabetically",
@@ -372,13 +425,14 @@ class StatisticsMenu(Menu):
 
     def studentsSortedAlphabetically(self):
         assignmentId = input("Choose assignment id: ")
-        assignment = self.controllerWrapper.findAssignment(assignmentId)
+        assignmentId = TypeParser.parseInt(assignmentId, InvalidAssignmentId)
+        assignment = self.gradeController.findAssignment(assignmentId)
         print(
             "You are viewing the students ordered alphabetically for the assignment with "
             "description '" + assignment.getDescription() +
             "' and deadline " + ManageAssignmentsMenu.dateToStr(assignment.getDeadline()))
 
-        studentList = self.controllerWrapper.getStudentsForAssignmentSortedAlphabetically(assignmentId)
+        studentList = self.gradeController.getStudentsForAssignmentSortedAlphabetically(assignmentId)
         if len(studentList) == 0:
             print("No students received this assignment")
             return
@@ -388,41 +442,44 @@ class StatisticsMenu(Menu):
 
     def studentsSortedByGrade(self):
         assignmentId = input("Choose assignment id: ")
-        assignment = self.controllerWrapper.findAssignment(assignmentId)
+        assignmentId = TypeParser.parseInt(assignmentId, InvalidAssignmentId)
+        assignment = self.gradeController.findAssignment(assignmentId)
         print(
             "You are viewing the students ordered by grade for the assignment with "
             "description '" + assignment.getDescription() +
             "' and deadline " + ManageAssignmentsMenu.dateToStr(assignment.getDeadline()))
 
-        studentList = self.controllerWrapper.getStudentsForAssignmentSortedByGrade(assignmentId)
+        studentList = self.gradeController.getStudentsForAssignmentSortedByGrade(assignmentId)
         if len(studentList) == 0:
             print("No students received this assignment")
             return
         print("\nID - Name - Group - Grade")
         for student in studentList:
+            gradeObject = self.gradeController.getGrade(student.getStudentId(), assignmentId)
             print(ManageStudentsMenu.studentToStr(student) + " - " +
-                  str(self.controllerWrapper.getGrade(student.getStudentId(), assignmentId)))
+                  MenuUI.gradeToStr(gradeObject))
 
     def studentsSortedByAverage(self):
-        resultList = self.controllerWrapper.getStudentsSortedByAverage()
+        resultList = self.gradeController.getStudentsSortedByAverage()
         if len(resultList) == 0:
             print("No students to show")
             return
         print("\nID - Name - Group - Average grade")
-        for pair in resultList:
-            print(ManageStudentsMenu.studentToStr(pair[0]) + " - " + (str(pair[1]) if pair[1] != 0 else "No grades"))
+        for dto in resultList:
+            averageGrade = (str(dto.getAverage()) if dto.getAverage() != 0 else "No grades")
+            print(ManageStudentsMenu.studentToStr(dto.getStudent()) + " - " + averageGrade)
 
     def assignmentsSortedByAverage(self):
-        resultList = self.controllerWrapper.getAssignmentsSortedByAverage()
+        resultList = self.gradeController.getAssignmentsSortedByAverage()
         if len(resultList) == 0:
             print("No assignments to show")
             return
         print("\nID - Description - Deadline - Average Grade")
-        for pair in resultList:
-            print(ManageAssignmentsMenu.assignmentToStr(pair[0]) + " - " + str(pair[1]))
+        for dto in resultList:
+            print(ManageAssignmentsMenu.assignmentToStr(dto.getAssignment()) + " - " + str(dto.getAverage()))
 
     def lateStudents(self):
-        studentList = self.controllerWrapper.lateStudents()
+        studentList = self.gradeController.lateStudents()
         if len(studentList) == 0:
             print("No students are late with their assignments")
             return

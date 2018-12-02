@@ -7,7 +7,7 @@ from datetime import datetime, date
 
 from repository.RepositoryWrapper import RepositoryWrapper
 from logic.ControllerWrapper import ControllerWrapper
-from ui.menuUI import *
+from ui.MenuUI import *
 
 
 def run():

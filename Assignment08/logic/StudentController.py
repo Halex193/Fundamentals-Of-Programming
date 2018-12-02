@@ -10,9 +10,10 @@ from repository.Repository import Repository
 
 class StudentController:
 
-    def __init__(self, studentRepository: Repository, changesStack: ChangesStack):
+    def __init__(self, studentRepository: Repository, changesStack: ChangesStack, deleteCallback: callable = None):
         self.__studentRepository = studentRepository
         self.__changesStack = changesStack
+        self.__deleteCallback = deleteCallback
 
     def listStudents(self) -> List[Student]:
         """
@@ -31,7 +32,7 @@ class StudentController:
 
         return student
 
-    def removeStudent(self, studentId: int, deleteCallback: function = None):
+    def removeStudent(self, studentId: int):
         """
         Removes a student from the repository
         """
@@ -40,8 +41,8 @@ class StudentController:
 
         self.__changesStack.beginCommit()
         self.__changesStack.addChange(ChangesStack.ItemRemoved(student))
-        if deleteCallback is not None:
-            deleteCallback(student)
+        if self.__deleteCallback is not None:
+            self.__deleteCallback(student)
         else:
             self.__changesStack.endCommit()
 

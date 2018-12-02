@@ -5,7 +5,7 @@ class Settings:
             "studentsFile": '',
             "gradesFile": '',
             "assignmentsFile": '',
-            "ui": 'menuUI'
+            "ui": 'MenuUI'
         }
         self.__settings = {}
         self.__settings.update(self.__defaultSettings)
