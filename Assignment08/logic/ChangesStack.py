@@ -38,17 +38,23 @@ class ChangesStack:
 
     def endCommit(self):
         """
-        Appends the current commit to the chages stack
+        Appends the current commit to the changes stack
         """
         self.__changesStack = self.__changesStack[:self.__currentIndex + 1]
         self.__changesStack.append(self.__currentCommit)
         self.__currentIndex += 1
 
-    def addChange(self, change: Change):
+    def addChange(self, change: Change, newCommit=False):
         """
         Adds the change to the current commit
         """
+        if newCommit:
+            self.beginCommit()
+
         self.__currentCommit.append(change)
+
+        if newCommit:
+            self.endCommit()
 
     def undo(self) -> bool:
         """

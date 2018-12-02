@@ -2,7 +2,6 @@ from datetime import date
 from typing import List, Type, Union
 
 from logic.AssignmentController import AssignmentController
-from logic.ChangesCallback import ChangesCallback
 from logic.ChangesStack import ChangesStack, ChangesHandler
 from logic.GradeController import GradeController
 from logic.StudentController import StudentController
@@ -12,7 +11,7 @@ from model.Student import Student
 from repository.RepositoryWrapper import RepositoryWrapper
 
 
-class ControllerWrapper(ChangesHandler, ChangesCallback):
+class ControllerWrapper(ChangesHandler):
     def __init__(self, repositoryWrapper: RepositoryWrapper, currentDate: date):
         self.__repositoryWrapper = repositoryWrapper
         self.__changesStack = ChangesStack(self)
@@ -25,20 +24,7 @@ class ControllerWrapper(ChangesHandler, ChangesCallback):
         self.__gradeController = GradeController(studentRepository, gradeRepository,
                                                  assignmentRepository, currentDate, self)
 
-    def itemAdded(self, item):
-        self.__changesStack.beginCommit()
-        self.__changesStack.addChange(ChangesStack.ItemAdded(item))
-        self.__changesStack.endCommit()
-
-    def itemUpdated(self, initialItem, newItem):
-        self.__changesStack.beginCommit()
-        self.__changesStack.addChange(ChangesStack.ItemRemoved(initialItem))
-        self.__changesStack.addChange(ChangesStack.ItemAdded(newItem))
-        self.__changesStack.endCommit()
-
-    def itemRemoved(self, item):
-        self.__changesStack.beginCommit()
-        self.__changesStack.addChange(ChangesStack.ItemRemoved(item))
+    def cascadeDelete(self, item):
         if type(item) is Student or Assignment:
             gradeRepository = self.__repositoryWrapper.getRepository(Grade)
             gradeList = gradeRepository.getItems()
@@ -46,7 +32,7 @@ class ControllerWrapper(ChangesHandler, ChangesCallback):
             for grade in linkedGrades:
                 self.__changesStack.addChange(ChangesStack.ItemRemoved(grade))
                 gradeRepository.deleteItem(grade)
-        self.__changesStack.endCommit()
+            self.__changesStack.endCommit()
 
     @staticmethod
     def __gradeLinked(grade: Grade, item):
@@ -54,6 +40,16 @@ class ControllerWrapper(ChangesHandler, ChangesCallback):
             return grade.getStudentId() == item.getStudentId()
         elif type(item) is Assignment:
             return grade.getAssignmentId() == item.getAssignmentId()
+
+    def populateRepository(self):
+        """
+        Adds default data to the repository
+        """
+        self.__studentController.addRandomStudents(50)
+        self.__assignmentRepository.addRandomAssignments(50)
+        self.__gradeController.addRandomGrades(40, 40, 50)
+
+        self.clearHistory()
 
     def handleChanges(self, changesList: List[ChangesStack.Change], reverse):
         """
@@ -82,16 +78,6 @@ class ControllerWrapper(ChangesHandler, ChangesCallback):
 
     def removeItem(self, item):
         self.__repositoryWrapper.getRepository(type(item)).deleteItem(item)
-
-    def populateRepository(self):
-        """
-        Adds default data to the repository
-        """
-        self.__studentController.addRandomStudents(50)
-        self.__assignmentRepository.addRandomAssignments(50)
-        self.__gradeController.addRandomGrades(40, 40, 50)
-
-        self.clearHistory()
 
     def clearHistory(self):
         self.__changesStack.clearStack()

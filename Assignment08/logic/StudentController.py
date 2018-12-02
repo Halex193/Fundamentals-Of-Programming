@@ -2,17 +2,17 @@ import random
 from copy import copy
 from typing import List
 
-from logic.ChangesCallback import ChangesCallback
+from logic.ChangesStack import ChangesStack
 from model.Student import Student
-from model.ValidationUtils import ValidationUtils, InvalidStudentId
+from model.Validators import StudentValidator
 from repository.Repository import Repository
 
 
 class StudentController:
 
-    def __init__(self, studentRepository: Repository, changesCallback: ChangesCallback):
+    def __init__(self, studentRepository: Repository, changesStack: ChangesStack):
         self.__studentRepository = studentRepository
-        self.__changesCallback = changesCallback
+        self.__changesStack = changesStack
 
     def listStudents(self) -> List[Student]:
         """
@@ -25,19 +25,25 @@ class StudentController:
         Adds a student to the repository
         """
         student = Student(studentId, name, group)
-        ValidationUtils.Student.validateStudent(student)
+        StudentValidator.validateStudent(student)
         self.__studentRepository.addItem(student)
-        self.__changesCallback.itemAdded(student)
+        self.__changesStack.addChange(ChangesStack.ItemAdded(student), newCommit=True)
 
         return student
 
-    def removeStudent(self, studentId: int):
+    def removeStudent(self, studentId: int, deleteCallback: function = None):
         """
         Removes a student from the repository
         """
         student = self.findStudent(studentId)
         self.__studentRepository.deleteItem(student)
-        self.__changesCallback.itemRemoved(student)
+
+        self.__changesStack.beginCommit()
+        self.__changesStack.addChange(ChangesStack.ItemRemoved(student))
+        if deleteCallback is not None:
+            deleteCallback(student)
+        else:
+            self.__changesStack.endCommit()
 
     def findStudent(self, studentId: int) -> Student:
         """
@@ -46,7 +52,7 @@ class StudentController:
         student = Student(studentId)
         foundStudent = self.__studentRepository.getItem(student)
         if foundStudent is None:
-            raise InvalidStudentId
+            raise StudentIdNotFound
         return foundStudent
 
     def updateStudent(self, studentId: int, name: str, group: int):
@@ -58,9 +64,12 @@ class StudentController:
         newStudent = copy(student)
         newStudent.setName(name)
         newStudent.setGroup(group)
-        ValidationUtils.Student.validateStudent(newStudent)
+        StudentValidator.validateStudent(newStudent)
         self.__studentRepository.updateItem(newStudent)
-        self.__changesCallback.itemUpdated(student, newStudent)
+        self.__changesStack.beginCommit()
+        self.__changesStack.addChange(ChangesStack.ItemRemoved(student))
+        self.__changesStack.addChange(ChangesStack.ItemAdded(newStudent))
+        self.__changesStack.endCommit()
 
     def addRandomStudents(self, number):
         firstNames = [

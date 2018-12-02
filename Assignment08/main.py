@@ -1,6 +1,8 @@
 """
 Main module
 """
+
+from utils.Settings import Settings
 from datetime import datetime, date
 
 from repository.RepositoryWrapper import RepositoryWrapper
@@ -9,7 +11,13 @@ from ui.menuUI import *
 
 
 def run():
-    repositoryWrapper = RepositoryWrapper('inmemory')
+    settings = Settings()
+    repositoryWrapper = RepositoryWrapper(
+        settings["repository"],
+        settings["studentsFile"],
+        settings["gradesFile"],
+        settings["assignmentsFile"]
+    )
     now = datetime.now()
     currentDate = date(now.year, now.month, now.day)
     controllerWrapper = ControllerWrapper(repositoryWrapper, currentDate)

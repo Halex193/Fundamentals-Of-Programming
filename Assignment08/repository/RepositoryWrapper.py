@@ -3,7 +3,9 @@ from typing import Type, Union
 from model.Student import Student
 from model.Grade import Grade
 from model.Assignment import Assignment
+from repository.BinaryRepository import BinaryRepository
 from repository.Repository import Repository
+from repository.TextFileRepository import TextFileRepository
 
 
 class RepositoryWrapper:
@@ -11,15 +13,19 @@ class RepositoryWrapper:
     Holds all the program data
     """
 
-    def __init__(self, type: str):
-        if type == 'inmemory':
+    def __init__(self, storageType: str, studentsFile: str, gradesFile: str, assignmentsFile: str):
+        if storageType == 'inmemory':
             self.__studentRepository = Repository(Student)
             self.__gradeRepository = Repository(Grade)
             self.__assignmentRepository = Repository(Assignment)
-        elif type == 'text':
-            pass
-        elif type == 'binary':
-            pass
+        elif storageType == 'text':
+            self.__studentRepository = TextFileRepository(Student, studentsFile)
+            self.__gradeRepository = TextFileRepository(Grade, gradesFile)
+            self.__assignmentRepository = TextFileRepository(Assignment, assignmentsFile)
+        elif storageType == 'binary':
+            self.__studentRepository = BinaryRepository(Student, studentsFile)
+            self.__gradeRepository = BinaryRepository(Grade, gradesFile)
+            self.__assignmentRepository = BinaryRepository(Assignment, assignmentsFile)
 
         self.__repositories = {
             Student: self.__studentRepository,

@@ -1,4 +1,4 @@
-from model.CSVConverter import CSVConverter
+from utils.CSVConverter import CSVConverter
 from repository.FileRepository import FileRepository
 
 

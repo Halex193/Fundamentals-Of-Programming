@@ -3,17 +3,19 @@ import random
 from copy import copy
 from typing import List
 
-from logic.ChangesCallback import ChangesCallback
+from logic.ChangesStack import ChangesStack
+from logic.ControllerError import AssignmentIdNotFound
 from model.Assignment import Assignment
-from model.ValidationUtils import ValidationUtils, InvalidAssignmentId
+from model.ValidationError import InvalidAssignmentId
+from model.Validators import AssignmentValidator
 from repository.Repository import Repository
 
 
 class AssignmentController:
 
-    def __init__(self, assignmentRepository: Repository, changesCallback: ChangesCallback):
+    def __init__(self, assignmentRepository: Repository, changesStack: ChangesStack):
         self.__assignmentRepository = assignmentRepository
-        self.__changesCallback = changesCallback
+        self.__changesStack = changesStack
 
     def listAssignments(self) -> List[Assignment]:
         """
@@ -26,19 +28,24 @@ class AssignmentController:
         Adds an assignment to the repository
         """
         assignment = Assignment(assignmentId, description, deadline)
-        ValidationUtils.Assignment.validateAssignment(assignment)
+        AssignmentValidator.validateAssignment(assignment)
         self.__assignmentRepository.addItem(assignment)
-        self.__changesCallback.itemAdded(assignment)
+        self.__changesStack.addChange(ChangesStack.ItemAdded(assignment), newCommit=True)
 
         return assignment
 
-    def removeAssignment(self, assignmentId: int):
+    def removeAssignment(self, assignmentId: int, deleteCallback: function = None):
         """
         Removes an assignment from the repository
         """
         assignment = self.findAssignment(assignmentId)
         self.__assignmentRepository.deleteItem(assignment)
-        self.__changesCallback.itemRemoved(assignment)
+        self.__changesStack.beginCommit()
+        self.__changesStack.addChange(ChangesStack.ItemRemoved(assignment))
+        if deleteCallback is not None:
+            deleteCallback(assignment)
+        else:
+            self.__changesStack.endCommit()
 
     def findAssignment(self, assignmentId: int) -> Assignment:
         """
@@ -47,7 +54,7 @@ class AssignmentController:
         assignment = Assignment(assignmentId)
         foundAssignment = self.__assignmentRepository.getItem(assignment)
         if foundAssignment is None:
-            raise InvalidAssignmentId
+            raise AssignmentIdNotFound
         return foundAssignment
 
     def updateAssignment(self, assignmentId: int, description: str, deadline: datetime.date):
@@ -58,9 +65,13 @@ class AssignmentController:
         newAssignment = copy(assignment)
         newAssignment.setDescription(description)
         newAssignment.setDeadline(deadline)
-        ValidationUtils.Assignment.validateAssignment(newAssignment)
+        AssignmentValidator.validateAssignment(newAssignment)
         self.__assignmentRepository.updateItem(newAssignment)
-        self.__changesCallback.itemUpdated(assignment, newAssignment)
+
+        self.__changesStack.beginCommit()
+        self.__changesStack.addChange(ChangesStack.ItemRemoved(assignment))
+        self.__changesStack.addChange(ChangesStack.ItemAdded(newAssignment))
+        self.__changesStack.endCommit()
 
     def addRandomAssignments(self, number):
         descriptionTitles = [

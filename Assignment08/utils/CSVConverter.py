@@ -3,7 +3,8 @@ from typing import Union, Type
 from model.Assignment import Assignment
 from model.Grade import Grade
 from model.Student import Student
-from model.ValidationUtils import *
+from model.Validators import *
+from utils.TypeParser import TypeParser
 
 
 class CSVConverter:
@@ -54,11 +55,11 @@ class CSVConverter:
     def __CSVToStudent(csvString: str):
         values = csvString.split(',')
         student = Student(
-            ValidationUtils.parseInt(values[0], InvalidStudentId),
+            TypeParser.parseInt(values[0], StudentValidator.InvalidStudentId),
             values[1],
-            ValidationUtils.parseInt(values[2], InvalidStudentGroup)
+            TypeParser.parseInt(values[2],  StudentValidator.InvalidStudentGroup)
         )
-        ValidationUtils.Student.validateStudent(student)
+        StudentValidator.validateStudent(student)
         return student
 
     @staticmethod
@@ -67,23 +68,22 @@ class CSVConverter:
         if values[2] == 'None':
             gradeValue = None
         else:
-            gradeValue = ValidationUtils.parseInt(values[2], InvalidGrade)
+            gradeValue = TypeParser.parseInt(values[2], GradeValidator.InvalidGrade)
         grade = Grade(
-            ValidationUtils.parseInt(values[0], InvalidStudentId),
-            ValidationUtils.parseInt(values[1], InvalidAssignmentId),
+            TypeParser.parseInt(values[0], StudentValidator.InvalidStudentId),
+            TypeParser.parseInt(values[1], AssignmentValidator.InvalidAssignmentId),
             gradeValue
         )
-        # ValidationUtils.Grade.validateStudent(grade)
-        # TODO validate Grade
+        GradeValidator.validateGrade(grade)
         return grade
 
     @staticmethod
     def __CSVToAssignment(csvString: str):
         values = csvString.split(',')
         assignment = Assignment(
-            ValidationUtils.parseInt(values[0], InvalidAssignmentId),
+            TypeParser.parseInt(values[0], AssignmentValidator.InvalidAssignmentId),
             values[1],
-            ValidationUtils.parseDate(values[2], InvalidAssignmentDeadline)
+            TypeParser.parseDate(values[2], AssignmentValidator.InvalidAssignmentDeadline)
         )
-        ValidationUtils.Assignment.validateAssignment(assignment)
+        AssignmentValidator.validateAssignment(assignment)
         return assignment

@@ -2,7 +2,7 @@ from typing import List
 from unittest import TestCase
 from repository import Repository
 from logic import LogicComponent, ChangesHandler
-from model.ValidationUtils import *
+from model.Validators import *
 
 
 class TestLogicComponent(TestCase):
@@ -196,12 +196,12 @@ class TestLogicComponent(TestCase):
         assignment1 = self.logicComponent.addAssignment('Project1', '2.10.2018')
         assignment1Id = assignment1.getAssignmentId()
         with self.assertRaises(InvalidAssignmentId):
-            self.logicComponent.assignmentGradable(student1Id, assignment1Id)
+            self.logicComponent.validateGrading(student1Id, assignment1Id)
         self.logicComponent.assignToStudent(student1Id, assignment1Id)
-        self.logicComponent.assignmentGradable(student1Id, assignment1Id)
+        self.logicComponent.validateGrading(student1Id, assignment1Id)
         self.logicComponent.grade(student1Id, assignment1Id, '9')
         with self.assertRaises(InvalidAssignmentId):
-            self.logicComponent.assignmentGradable(student1Id, assignment1Id)
+            self.logicComponent.validateGrading(student1Id, assignment1Id)
 
     def populateRepository(self):
         studentList: List[Student] = [
