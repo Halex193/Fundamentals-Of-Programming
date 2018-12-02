@@ -21,9 +21,14 @@ def run():
     now = datetime.now()
     currentDate = date(now.year, now.month, now.day)
     controllerWrapper = ControllerWrapper(repositoryWrapper, currentDate)
-    controllerWrapper.populateRepository()
-    menuUI = MenuUI(controllerWrapper)
-    menuUI.run()
+    if repositoryWrapper.isEmpty():
+        controllerWrapper.populateRepository()
+
+    if settings["ui"] == "GUI":
+        ui = None
+    else:
+        ui = MenuUI(controllerWrapper)
+    ui.run()
 
 
 if __name__ == '__main__':

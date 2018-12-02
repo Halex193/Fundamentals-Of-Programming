@@ -10,6 +10,9 @@ class DuplicateItemError(RepositoryError):
         return self.__itemType
 
 
-class RepositoryTypeError(Exception):
+class RepositoryTypeError(RepositoryError):
     pass
 
+
+class ItemNotFoundError(RepositoryError):
+    pass

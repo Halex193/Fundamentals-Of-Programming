@@ -5,33 +5,33 @@ class FileRepository(Repository):
 
     def __init__(self, itemType: type, fileName: str):
         Repository.__init__(self, itemType)
-        self.__fileName = fileName
+        self._fileName = fileName
 
     def addItem(self, item):
-        self.__loadList()
+        self._loadList()
         Repository.addItem(self, item)
-        self.__saveList()
+        self._saveList()
 
     def updateItem(self, item):
-        self.__loadList()
+        self._loadList()
         Repository.updateItem(self, item)
-        self.__saveList()
+        self._saveList()
 
     def getItems(self):
-        self.__loadList()
-        Repository.getItems(self)
+        self._loadList()
+        return Repository.getItems(self)
 
     def getItem(self, item):
-        self.__loadList()
-        Repository.getItem(self, item)
+        self._loadList()
+        return Repository.getItem(self, item)
 
     def deleteItem(self, item):
-        self.__loadList()
+        self._loadList()
         Repository.deleteItem(self, item)
-        self.__saveList()
+        self._saveList()
 
-    def __loadList(self):
-        pass
+    def _loadList(self):
+        raise NotImplementedError
 
-    def __saveList(self):
-        pass
+    def _saveList(self):
+        raise NotImplementedError

@@ -1,8 +1,5 @@
 from typing import Union, Type
 
-from model.Assignment import Assignment
-from model.Grade import Grade
-from model.Student import Student
 from model.Validators import *
 from utils.TypeParser import TypeParser
 
@@ -55,9 +52,9 @@ class CSVConverter:
     def __CSVToStudent(csvString: str):
         values = csvString.split(',')
         student = Student(
-            TypeParser.parseInt(values[0], StudentValidator.InvalidStudentId),
+            TypeParser.parseInt(values[0], InvalidStudentId),
             values[1],
-            TypeParser.parseInt(values[2],  StudentValidator.InvalidStudentGroup)
+            TypeParser.parseInt(values[2],  InvalidStudentGroup)
         )
         StudentValidator.validateStudent(student)
         return student
@@ -68,10 +65,10 @@ class CSVConverter:
         if values[2] == 'None':
             gradeValue = None
         else:
-            gradeValue = TypeParser.parseInt(values[2], GradeValidator.InvalidGrade)
+            gradeValue = TypeParser.parseInt(values[2], InvalidGrade)
         grade = Grade(
-            TypeParser.parseInt(values[0], StudentValidator.InvalidStudentId),
-            TypeParser.parseInt(values[1], AssignmentValidator.InvalidAssignmentId),
+            TypeParser.parseInt(values[0], InvalidStudentId),
+            TypeParser.parseInt(values[1], InvalidAssignmentId),
             gradeValue
         )
         GradeValidator.validateGrade(grade)
@@ -81,9 +78,9 @@ class CSVConverter:
     def __CSVToAssignment(csvString: str):
         values = csvString.split(',')
         assignment = Assignment(
-            TypeParser.parseInt(values[0], AssignmentValidator.InvalidAssignmentId),
+            TypeParser.parseInt(values[0], InvalidAssignmentId),
             values[1],
-            TypeParser.parseDate(values[2], AssignmentValidator.InvalidAssignmentDeadline)
+            TypeParser.parseDate(values[2], InvalidAssignmentDeadline)
         )
         AssignmentValidator.validateAssignment(assignment)
         return assignment

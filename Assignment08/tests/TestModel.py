@@ -1,6 +1,7 @@
 """
 Test model module
 """
+from copy import copy
 from unittest import TestCase
 
 from model.Validators import *
@@ -19,14 +20,14 @@ class TestStudent(TestCase):
         self.assertTrue(student.getStudentId() == 1)
         self.assertTrue(student.getName() == 'Alex')
         self.assertTrue(student.getGroup() == 6)
-        self.assertTrue(str(student) == "Alex - 6")
+        self.assertTrue(str(student) == "1 - Alex - 6")
         student = Student(1, 'Alex')
         self.assertTrue(student.getStudentId() == 1)
         self.assertTrue(student.getName() == 'Alex')
         self.assertTrue(student.getGroup() is None)
-        self.assertTrue(str(student) == "Alex")
-        studentCopy = Student.copyStudent(5, student)
-        self.assertTrue(studentCopy.getStudentId() == 5)
+        self.assertTrue(str(student) == "1 - Alex - None")
+        studentCopy = copy(student)
+        self.assertTrue(studentCopy.getStudentId() == 1)
         self.assertTrue(studentCopy.getName() == 'Alex')
         self.assertTrue(studentCopy.getGroup() is None)
 
@@ -45,17 +46,17 @@ class TestStudent(TestCase):
         self.assertTrue(student != Student(2, 'Other Name', 7))
 
     def testValidation(self):
-        ValidationUtils.StudentValidator.validateStudent(self.student)
+        StudentValidator.validateStudent(self.student)
         with self.assertRaises(InvalidStudentId):
-            ValidationUtils.StudentValidator.validateStudent(Student(-3, 'Name', 8))
+            StudentValidator.validateStudent(Student(-3, 'Name', 8))
         with self.assertRaises(InvalidStudentId):
-            ValidationUtils.StudentValidator.validateStudent(Student('str', 'Name', 8))
+            StudentValidator.validateStudent(Student('str', 'Name', 8))
         with self.assertRaises(InvalidStudentName):
-            ValidationUtils.StudentValidator.validateStudent(Student(3, 8, 8))
+            StudentValidator.validateStudent(Student(3, 8, 8))
         with self.assertRaises(InvalidStudentGroup):
-            ValidationUtils.StudentValidator.validateStudent(Student(3, 'Name', -8))
+            StudentValidator.validateStudent(Student(3, 'Name', -8))
         with self.assertRaises(InvalidStudentGroup):
-            ValidationUtils.StudentValidator.validateStudent(Student(3, 'Name', 'str'))
+            StudentValidator.validateStudent(Student(3, 'Name', 'str'))
 
 
 class TestGrade(TestCase):
@@ -72,15 +73,13 @@ class TestGrade(TestCase):
         self.assertTrue(grade.getAssignmentId() == 2)
         self.assertTrue(grade.getGrade() == 10)
         self.assertTrue(Grade(3, 4).getGrade() is None)
-        self.assertTrue(str(grade) == "10")
-        self.assertTrue(str(Grade(3, 4)) == "No grade")
+        self.assertTrue(str(grade) == "1 - 2 - 10")
+        self.assertTrue(str(Grade(3, 4)) == "3 - 4 - No grade")
 
     def testUpdate(self):
         grade = Grade(1, 4)
         grade.setGrade(14)
         self.assertTrue(grade.getGrade() == 14)
-        with self.assertRaises(InvalidOperationException):
-            grade.setGrade(12)
 
     def testEquals(self):
         grade = self.grade
@@ -104,7 +103,7 @@ class TestAssignment(TestCase):
         self.assertTrue(assignment.getAssignmentId() == 1)
         self.assertTrue(assignment.getDescription() == 'Project')
         self.assertTrue(assignment.getDeadline() == date(2018, 7, 11))
-        self.assertTrue(str(assignment) == "Project - 2018-07-11")
+        self.assertTrue(str(assignment) == "1 - Project - 11.07.2018")
 
     def testUpdate(self):
         assignment = self.assignment
@@ -121,15 +120,15 @@ class TestAssignment(TestCase):
         self.assertTrue(assignment != Assignment(3, 'Other Project', date(2020, 5, 9)))
 
     def testValidation(self):
-        ValidationUtils.AssignmentValidator.validateAssignment(self.assignment)
+        AssignmentValidator.validateAssignment(self.assignment)
         sampleDate = date(2018, 7, 8)
         with self.assertRaises(InvalidAssignmentId):
-            ValidationUtils.AssignmentValidator.validateAssignment(Assignment(-3, 'Desc', sampleDate))
+            AssignmentValidator.validateAssignment(Assignment(-3, 'Desc', sampleDate))
         with self.assertRaises(InvalidAssignmentId):
-            ValidationUtils.AssignmentValidator.validateAssignment(Assignment('str', 'Desc', sampleDate))
+            AssignmentValidator.validateAssignment(Assignment('str', 'Desc', sampleDate))
         with self.assertRaises(InvalidAssignmentDescription):
-            ValidationUtils.AssignmentValidator.validateAssignment(Assignment(3, 8, sampleDate))
+            AssignmentValidator.validateAssignment(Assignment(3, 8, sampleDate))
         with self.assertRaises(InvalidAssignmentDeadline):
-            ValidationUtils.AssignmentValidator.validateAssignment(Assignment(3, 'Desc', -8))
+            AssignmentValidator.validateAssignment(Assignment(3, 'Desc', -8))
         with self.assertRaises(InvalidAssignmentDeadline):
-            ValidationUtils.AssignmentValidator.validateAssignment(Assignment(3, 'Desc', 'str'))
+            AssignmentValidator.validateAssignment(Assignment(3, 'Desc', 'str'))

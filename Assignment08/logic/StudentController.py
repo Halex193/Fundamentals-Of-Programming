@@ -3,6 +3,7 @@ from copy import copy
 from typing import List
 
 from logic.ChangesStack import ChangesStack
+from logic.ControllerError import StudentIdNotFound
 from model.Student import Student
 from model.Validators import StudentValidator
 from repository.Repository import Repository

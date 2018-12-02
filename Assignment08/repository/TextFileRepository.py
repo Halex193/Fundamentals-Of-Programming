@@ -4,24 +4,24 @@ from repository.FileRepository import FileRepository
 
 class TextFileRepository(FileRepository):
 
-    def __loadList(self):
+    def _loadList(self):
         file = None
         try:
-            file = open(self.__fileName, 'r')
-            self.__collection = [CSVConverter.convertCSVToItem(self.__itemType, csvString)
-                                 for csvString in file.readlines()]
+            file = open(self._fileName, 'r')
+            self._collection = [CSVConverter.convertCSVToItem(self._itemType, csvString.replace('\n', ''))
+                                for csvString in file.readlines()]
         except FileNotFoundError:
-            self.__collection = []
+            self._collection = []
         finally:
             if file is not None:
                 file.close()
 
-    def __saveList(self):
+    def _saveList(self):
         file = None
         try:
-            file = open(self.__fileName, 'w')
-            file.writelines([CSVConverter.convertItemToCSV(item)
-                             for item in self.__collection])
+            file = open(self._fileName, 'w')
+            file.writelines([CSVConverter.convertItemToCSV(item) + "\n"
+                             for item in self._collection])
         finally:
             if file is not None:
                 file.close()

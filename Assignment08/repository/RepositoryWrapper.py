@@ -38,3 +38,16 @@ class RepositoryWrapper:
         Returns the Repository for the given item type
         """
         return self.__repositories[repositoryType]
+
+    def isEmpty(self) -> bool:
+        # for repository in self.__repositories.values():
+        #     if len(repository.getItems()) != 0:
+        #         return False
+        if len(self.__studentRepository.getItems()) != 0:
+            return False
+        if len(self.__gradeRepository.getItems()) != 0:
+            return False
+        if len(self.__assignmentRepository.getItems()) != 0:
+            return False
+
+        return True
