@@ -50,7 +50,7 @@ class CSVConverter:
 
     @staticmethod
     def __CSVToStudent(csvString: str):
-        values = csvString.split(',')
+        values = csvString.split(';')
         student = Student(
             TypeParser.parseInt(values[0], InvalidStudentId),
             values[1],
@@ -61,7 +61,7 @@ class CSVConverter:
 
     @staticmethod
     def __CSVToGrade(csvString: str):
-        values = csvString.split(',')
+        values = csvString.split(';')
         if values[2] == 'None':
             gradeValue = None
         else:
