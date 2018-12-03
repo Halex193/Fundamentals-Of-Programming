@@ -123,7 +123,7 @@ class MainMenu(Menu):
             '5': self.showStatistics,
             '6': self.undo,
             '7': self.redo,
-            '8': self.listRepo
+            '8': self.listRepository
         }
 
     def manageStudents(self):
@@ -176,7 +176,7 @@ class MainMenu(Menu):
         else:
             print("No undo operation left to reverse")
 
-    def listRepo(self):
+    def listRepository(self):
         print("\nSTUDENTS")
         ManageStudentsMenu(self.controllerWrapper).listStudents()
         print("\nGRADES")
