@@ -11,13 +11,11 @@ from model.Grade import Grade
 from model.Student import Student
 from model.ValidationError import *
 from repository.RepositoryError import *
+from ui.UI import UI
 from utils.TypeParser import TypeParser
 
 
-class MenuUI:
-
-    def __init__(self, controllerWrapper: ControllerWrapper):
-        self.controllerWrapper = controllerWrapper
+class MenuUI(UI):
 
     def run(self):
         MainMenu(self.controllerWrapper).showMenu()

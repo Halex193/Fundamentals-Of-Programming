@@ -1,7 +1,7 @@
 """
 Main module
 """
-
+from ui.GUI import GUI
 from utils.Settings import Settings
 from datetime import datetime, date
 
@@ -24,8 +24,9 @@ def run():
     if repositoryWrapper.isEmpty():
         controllerWrapper.populateRepository()
 
+    ui: UI = None
     if settings["ui"] == "GUI":
-        ui = None
+        ui = GUI(controllerWrapper)
     else:
         ui = MenuUI(controllerWrapper)
     ui.run()
