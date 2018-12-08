@@ -26,7 +26,7 @@ class CSVConverter:
 
     @staticmethod
     def __studentToCSV(student: Student):
-        return "{:d},{},{}".format(
+        return "{:d};{};{}".format(
             student.getStudentId(),
             student.getName(),
             student.getGroup()
@@ -34,7 +34,7 @@ class CSVConverter:
 
     @staticmethod
     def __gradeToCSV(grade: Grade):
-        return "{:d},{:d},{}".format(
+        return "{:d};{:d};{}".format(
             grade.getStudentId(),
             grade.getAssignmentId(),
             grade.getGrade()
@@ -42,7 +42,7 @@ class CSVConverter:
 
     @staticmethod
     def __assignmentToCSV(assignment: Assignment):
-        return "{:d},{},{:%d.%m.%Y}".format(
+        return "{:d};{};{:%d.%m.%Y}".format(
             assignment.getAssignmentId(),
             assignment.getDescription(),
             assignment.getDeadline()
@@ -76,7 +76,7 @@ class CSVConverter:
 
     @staticmethod
     def __CSVToAssignment(csvString: str):
-        values = csvString.split(',')
+        values = csvString.split(';')
         assignment = Assignment(
             TypeParser.parseInt(values[0], InvalidAssignmentId),
             values[1],
