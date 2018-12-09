@@ -5,7 +5,6 @@ from utils.TypeParser import TypeParser
 
 
 class CSVConverter:
-
     @staticmethod
     def convertItemToCSV(item: Union[Student, Grade, Assignment]):
         toCSV = {
@@ -26,7 +25,7 @@ class CSVConverter:
 
     @staticmethod
     def __studentToCSV(student: Student):
-        return "{:d};{};{}".format(
+        return "{:d},{},{}".format(
             student.getStudentId(),
             student.getName(),
             student.getGroup()
@@ -34,7 +33,7 @@ class CSVConverter:
 
     @staticmethod
     def __gradeToCSV(grade: Grade):
-        return "{:d};{:d};{}".format(
+        return "{:d},{:d},{}".format(
             grade.getStudentId(),
             grade.getAssignmentId(),
             grade.getGrade()
@@ -42,7 +41,7 @@ class CSVConverter:
 
     @staticmethod
     def __assignmentToCSV(assignment: Assignment):
-        return "{:d};{};{:%d.%m.%Y}".format(
+        return "{:d},{},{:%d.%m.%Y}".format(
             assignment.getAssignmentId(),
             assignment.getDescription(),
             assignment.getDeadline()
@@ -50,18 +49,18 @@ class CSVConverter:
 
     @staticmethod
     def __CSVToStudent(csvString: str):
-        values = csvString.split(';')
+        values = csvString.split(',')
         student = Student(
             TypeParser.parseInt(values[0], InvalidStudentId),
             values[1],
-            TypeParser.parseInt(values[2],  InvalidStudentGroup)
+            TypeParser.parseInt(values[2], InvalidStudentGroup)
         )
         StudentValidator.validateStudent(student)
         return student
 
     @staticmethod
     def __CSVToGrade(csvString: str):
-        values = csvString.split(';')
+        values = csvString.split(',')
         if values[2] == 'None':
             gradeValue = None
         else:
@@ -76,7 +75,7 @@ class CSVConverter:
 
     @staticmethod
     def __CSVToAssignment(csvString: str):
-        values = csvString.split(';')
+        values = csvString.split(',')
         assignment = Assignment(
             TypeParser.parseInt(values[0], InvalidAssignmentId),
             values[1],

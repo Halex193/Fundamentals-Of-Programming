@@ -1,7 +1,7 @@
 class Settings:
     def __init__(self):
         self.__defaultSettings = {
-            "repository": 'inmemory',
+            "repository": 'memory',
             "studentsFile": '',
             "gradesFile": '',
             "assignmentsFile": '',
@@ -9,12 +9,13 @@ class Settings:
         }
         self.__settings = {}
         self.__settings.update(self.__defaultSettings)
+        self.__settingsFileName = "settings.properties"
         self.readFile()
 
     def readFile(self):
         settingsFile = None
         try:
-            settingsFile = open("settings.properties", "r")
+            settingsFile = open(self.__settingsFileName, "r")
             lines = settingsFile.readlines()
             for line in lines:
                 components = line.split("=")
