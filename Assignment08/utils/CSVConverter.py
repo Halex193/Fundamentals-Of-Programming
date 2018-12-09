@@ -5,6 +5,9 @@ from utils.TypeParser import TypeParser
 
 
 class CSVConverter:
+    """
+    A utility class to convert to an from CSV format
+    """
     @staticmethod
     def convertItemToCSV(item: Union[Student, Grade, Assignment]):
         toCSV = {

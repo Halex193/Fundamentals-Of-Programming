@@ -14,9 +14,9 @@ def run():
     settings = Settings()
     repositoryWrapper = RepositoryWrapper(
         settings["repository"],
-        settings["studentsFile"],
-        settings["gradesFile"],
-        settings["assignmentsFile"]
+        settings["studentRepositoryLocation"],
+        settings["gradeRepositoryLocation"],
+        settings["assignmentRepositoryLocation"]
     )
     now = datetime.now()
     currentDate = date(now.year, now.month, now.day)

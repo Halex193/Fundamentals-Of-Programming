@@ -9,7 +9,9 @@ from utils.TypeParser import TypeParser
 
 
 class JSONConverter:
-
+    """
+    A utility class for converting to and from JSON format
+    """
     @staticmethod
     def convertListToJSON(itemType: type, list) -> str:
         newList = []

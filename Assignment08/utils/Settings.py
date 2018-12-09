@@ -2,9 +2,9 @@ class Settings:
     def __init__(self):
         self.__defaultSettings = {
             "repository": 'memory',
-            "studentsFile": '',
-            "gradesFile": '',
-            "assignmentsFile": '',
+            "studentRepositoryLocation": '',
+            "gradeRepositoryLocation": '',
+            "assignmentRepositoryLocation": '',
             "ui": 'MenuUI'
         }
         self.__settings = {}

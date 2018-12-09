@@ -4,9 +4,11 @@ from model.Student import Student
 from model.Grade import Grade
 from model.Assignment import Assignment
 from repository.BinaryRepository import BinaryRepository
+from repository.MySQLRepository import MySQLRepository
 from repository.Repository import Repository
 from repository.TextFileRepository import TextFileRepository
 from repository.JsonRepository import JsonRepository
+from utils.MySQLConnector import MySQLConnector
 
 
 class RepositoryWrapper:
@@ -14,25 +16,34 @@ class RepositoryWrapper:
     Holds all the program data
     """
 
-    def __init__(self, storageType: str, studentsFile: str, gradesFile: str, assignmentsFile: str):
+    def __init__(
+            self, storageType: str,
+            studentRepositoryLocation: str,
+            gradeRepositoryLocation: str,
+            assignmentRepositoryLocation: str
+    ):
         if storageType == 'memory':
             self.__studentRepository = Repository(Student)
             self.__gradeRepository = Repository(Grade)
             self.__assignmentRepository = Repository(Assignment)
         elif storageType == 'text':
-            self.__studentRepository = TextFileRepository(Student, studentsFile)
-            self.__gradeRepository = TextFileRepository(Grade, gradesFile)
-            self.__assignmentRepository = TextFileRepository(Assignment, assignmentsFile)
+            self.__studentRepository = TextFileRepository(Student, studentRepositoryLocation)
+            self.__gradeRepository = TextFileRepository(Grade, gradeRepositoryLocation)
+            self.__assignmentRepository = TextFileRepository(Assignment, assignmentRepositoryLocation)
         elif storageType == 'binary':
-            self.__studentRepository = BinaryRepository(Student, studentsFile)
-            self.__gradeRepository = BinaryRepository(Grade, gradesFile)
-            self.__assignmentRepository = BinaryRepository(Assignment, assignmentsFile)
+            self.__studentRepository = BinaryRepository(Student, studentRepositoryLocation)
+            self.__gradeRepository = BinaryRepository(Grade, gradeRepositoryLocation)
+            self.__assignmentRepository = BinaryRepository(Assignment, assignmentRepositoryLocation)
         elif storageType == 'json':
-            self.__studentRepository = JsonRepository(Student, studentsFile)
-            self.__gradeRepository = JsonRepository(Grade, gradesFile)
-            self.__assignmentRepository = JsonRepository(Assignment, assignmentsFile)
+            self.__studentRepository = JsonRepository(Student, studentRepositoryLocation)
+            self.__gradeRepository = JsonRepository(Grade, gradeRepositoryLocation)
+            self.__assignmentRepository = JsonRepository(Assignment, assignmentRepositoryLocation)
         elif storageType == 'sql':
-            pass
+            connection = MySQLConnector().getConnection()
+
+            self.__studentRepository = MySQLRepository(Student, studentRepositoryLocation, connection)
+            self.__gradeRepository = MySQLRepository(Grade, gradeRepositoryLocation, connection)
+            self.__assignmentRepository = MySQLRepository(Assignment, assignmentRepositoryLocation, connection)
 
         self.__repositories = {
             Student: self.__studentRepository,
