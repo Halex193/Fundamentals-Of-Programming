@@ -3,6 +3,7 @@ import random
 from copy import copy
 from typing import List
 
+from lib.CustomComponents import sortList
 from logic.ChangesStack import ChangesStack
 from logic.ControllerError import AssignmentIdNotFound
 from model.Assignment import Assignment
@@ -22,7 +23,14 @@ class AssignmentController:
         """
         Returns a list of assignments sorted in ascending order by their IDs
         """
-        return sorted(self.__assignmentRepository.getItems(), key=lambda assignment: assignment.getAssignmentId())
+
+        def compareAssignmentIds(assignment1, assignment2):
+            id1 = assignment1.getAssignmentId()
+            id2 = assignment2.getAssignmentId()
+            return (id1 - id2) / abs(id1 - id2)
+
+        return sortList(
+            self.__assignmentRepository.getItems(), compareAssignmentIds)
 
     def addAssignment(self, assignmentId: int, description: str, deadline: datetime.date) -> Assignment:
         """

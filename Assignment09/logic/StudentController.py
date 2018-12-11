@@ -2,6 +2,7 @@ import random
 from copy import copy
 from typing import List
 
+from lib.CustomComponents import sortList
 from logic.ChangesStack import ChangesStack
 from logic.ControllerError import StudentIdNotFound
 from model.Student import Student
@@ -20,7 +21,13 @@ class StudentController:
         """
         Returns a list of students sorted in ascending order by their IDs
         """
-        return sorted(self.__studentRepository.getItems(), key=lambda student: student.getStudentId())
+
+        def compareStudentIds(student1, student2):
+            id1 = student1.getStudentId()
+            id2 = student2.getStudentId()
+            return (id1 - id2) / abs(id1 - id2)
+
+        return sortList(self.__studentRepository.getItems(), compareStudentIds)
 
     def addStudent(self, studentId: int, name: str, group: int) -> Student:
         """

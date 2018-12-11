@@ -3,6 +3,7 @@ import random
 from copy import copy
 from typing import List
 
+from lib.CustomComponents import sortList, filterList
 from logic.ChangesStack import ChangesStack
 from logic.ControllerError import *
 from model.Assignment import Assignment
@@ -107,14 +108,16 @@ class GradeController:
         Lists all the grades for the student with the given ID
         """
         self.findStudent(studentId)
-        return [grade for grade in self.__gradeRepository.getItems() if grade.getStudentId() == studentId]
+        # return [grade for grade in self.__gradeRepository.getItems() if grade.getStudentId() == studentId]
+        return filterList(self.__gradeRepository.getItems(), lambda grade: grade.getStudentId() == studentId)
 
     def listAssignmentGrades(self, assignmentId) -> List[Grade]:
         """
         Lists all the grades for the assignment with the given ID
         """
         self.findAssignment(assignmentId)
-        return [grade for grade in self.__gradeRepository.getItems() if grade.getAssignmentId() == assignmentId]
+        # return [grade for grade in self.__gradeRepository.getItems() if grade.getAssignmentId() == assignmentId]
+        return filterList(self.__gradeRepository.getItems(), lambda grade: grade.getAssignmentId() == assignmentId)
 
     def findGrade(self, studentId: int, assignmentId: int) -> Grade:
         """
@@ -152,7 +155,8 @@ class GradeController:
         """
         self.findStudent(studentId)
         studentGrades = self.listStudentGrades(studentId)
-        studentNoneGrades = [grade for grade in studentGrades if grade.getGrade() is None]
+        # studentNoneGrades = [grade for grade in studentGrades if grade.getGrade() is None]
+        studentNoneGrades = filterList(studentGrades, lambda grade: grade.getGrade() is None)
         return [self.findAssignment(grade.getAssignmentId()) for grade in studentNoneGrades]
 
     def validateGrading(self, studentId: int, assignmentId: int) -> Grade:
@@ -175,7 +179,17 @@ class GradeController:
         """
         grades = self.listAssignmentGrades(assignmentId)
         students = [self.findStudent(grade.getStudentId()) for grade in grades]
-        return sorted(students, key=lambda student: student.getName())
+
+        def compareStudentNames(student1, student2):
+            name1 = student1.getName()
+            name2 = student2.getName()
+            if name1 == name2:
+                return 0
+            if name1 > name2:
+                return 1
+            return -1
+
+        return sortList(students, compareStudentNames)
 
     def getStudentsForAssignmentSortedByGrade(self, assignmentId: int) -> List[Student]:
         """
@@ -184,7 +198,17 @@ class GradeController:
         grades = self.listAssignmentGrades(assignmentId)
         noneGrades = [grade for grade in grades if grade.getGrade() is None]
         givenGrades = [grade for grade in grades if grade.getGrade() is not None]
-        sortedGrades = sorted(givenGrades, key=lambda grade: grade.getGrade(), reverse=True)
+
+        def compareGrades(grade1, grade2):
+            gradeValue1 = grade1.getGrade()
+            gradeValue2 = grade2.getGrade()
+            if gradeValue1 == gradeValue2:
+                return 0
+            if gradeValue1 > gradeValue2:
+                return -1
+            return 1
+
+        sortedGrades = sortList(givenGrades, compareGrades)
         students = [self.findStudent(grade.getStudentId()) for grade in sortedGrades + noneGrades]
         return students
 
@@ -204,7 +228,18 @@ class GradeController:
                     number += 1
             average = sum / number if number != 0 else 0
             DTOList.append(StudentWithAverageDTO(student, average))
-        return sorted(DTOList, key=lambda dto: dto.getAverage(), reverse=True)
+
+        def compareStudentWithAverageDTO(dto1, dto2):
+            average1 = dto1.getAverage()
+            average2 = dto2.getAverage()
+
+            if average1 == average2:
+                return 0
+            if average1 > average2:
+                return -1
+            return 1
+
+        return sortList(DTOList, compareStudentWithAverageDTO)
 
     def getAssignmentsSortedByAverage(self) -> List[AssignmentWithAverageDTO]:
         """
@@ -223,7 +258,18 @@ class GradeController:
             if number != 0:
                 average = sum / number
                 DTOList.append(AssignmentWithAverageDTO(assignment, average))
-        return sorted(DTOList, key=lambda dto: dto.getAverage(), reverse=True)
+
+        def compareAssignmentWithAverageDTO(dto1, dto2):
+            average1 = dto1.getAverage()
+            average2 = dto2.getAverage()
+
+            if average1 == average2:
+                return 0
+            if average1 > average2:
+                return -1
+            return 1
+
+        return sortList(DTOList, compareAssignmentWithAverageDTO)
 
     def getGrade(self, studentId: int, assignmentId: int) -> Grade:
         self.findStudent(studentId)
