@@ -1,5 +1,6 @@
 from copy import copy
 
+from lib.CustomComponents import Vector
 from repository.RepositoryError import *
 
 
@@ -9,7 +10,7 @@ class Repository:
     """
 
     def __init__(self, itemType: type):
-        self._collection = []
+        self._collection = Vector(itemType)
         self._itemType = itemType
 
     def checkType(self, item):
@@ -20,7 +21,7 @@ class Repository:
         self.checkType(item)
         if item in self._collection:
             raise DuplicateItemError(self._itemType)
-        self._collection.append(item)
+        self._collection.addItem(item)
 
     def getItems(self):
         if len(self._collection) == 0:
@@ -42,7 +43,8 @@ class Repository:
         raise ItemNotFoundError
 
     def deleteItem(self, item):
-        try:
-            self._collection.remove(item)
-        except ValueError:
-            raise ItemNotFoundError
+        for i in range(len(self._collection)):
+            if self._collection[i] == item:
+                del self._collection[i]
+                return
+        raise ItemNotFoundError

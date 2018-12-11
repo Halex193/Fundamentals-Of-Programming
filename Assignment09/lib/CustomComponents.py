@@ -13,6 +13,23 @@ class Vector:
         self.__itemType = itemType
         self.__pointer = 0
 
+    @staticmethod
+    def fromList(itemList: List, itemType: type):
+        """
+        Creates a new vector from a list of items
+        :param itemList: The list of items
+        :param itemType: The type of items
+        :return: The created vector
+        """
+        vector = Vector(itemType)
+        for item in itemList:
+            vector.addItem(item)
+        return vector
+
+    @staticmethod
+    def toList(vector):
+        return [item for item in vector]
+
     def __len__(self):
         return self.__len
 
@@ -60,7 +77,9 @@ class Vector:
     def __next__(self):
         if self.__pointer == self.__len:
             raise StopIteration
-        return self.__items[self.__pointer]
+        item = self.__items[self.__pointer]
+        self.__pointer += 1
+        return item
 
 
 def sortList(list: List, compare: callable) -> List:
@@ -203,3 +222,10 @@ class TestComponents(TestCase):
             return a % 2 == 0
 
         self.assertEqual(filterList(integerList, acceptanceFunction), [4, 2])
+
+    def testIterator(self):
+        integerList = [5, 4, 3, 2, 1]
+        pointer = 0
+        for integer in integerList:
+            self.assertEqual(integer, integerList[pointer])
+            pointer += 1

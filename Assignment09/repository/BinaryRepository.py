@@ -1,5 +1,6 @@
 import pickle
 
+from lib.CustomComponents import Vector
 from repository.FileRepository import FileRepository
 
 
@@ -11,7 +12,7 @@ class BinaryRepository(FileRepository):
             file = open(self._fileName, 'rb')
             self._collection = pickle.load(file)
         except FileNotFoundError:
-            self._collection = []
+            self._collection = Vector(self._itemType)
         finally:
             if file is not None:
                 file.close()

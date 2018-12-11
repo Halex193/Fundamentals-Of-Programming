@@ -1,3 +1,4 @@
+from lib.CustomComponents import Vector
 from utils.CSVConverter import CSVConverter
 from repository.FileRepository import FileRepository
 
@@ -8,10 +9,11 @@ class TextFileRepository(FileRepository):
         file = None
         try:
             file = open(self._fileName, 'r')
-            self._collection = [CSVConverter.convertCSVToItem(self._itemType, csvString.replace('\n', ''))
-                                for csvString in file.readlines()]
+            self._collection = Vector.fromList(
+                [CSVConverter.convertCSVToItem(self._itemType, csvString.replace('\n', ''))
+                 for csvString in file.readlines()], self._itemType)
         except FileNotFoundError:
-            self._collection = []
+            self._collection = Vector(self._itemType)
         finally:
             if file is not None:
                 file.close()
