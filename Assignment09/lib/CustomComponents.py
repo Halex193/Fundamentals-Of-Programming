@@ -28,6 +28,11 @@ class Vector:
 
     @staticmethod
     def toList(vector):
+        """
+        Creates a new list from a vector of items
+        :param vector: The vector of items
+        :return: The created list
+        """
         return [item for item in vector]
 
     def __len__(self):
