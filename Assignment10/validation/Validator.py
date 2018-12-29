@@ -6,20 +6,31 @@ class MoveInvalid(RuntimeError):
 
 
 class Validator:
+    """
+    Validates program data
+    """
 
     @staticmethod
-    def validateMove(move, sign, lastMoveSign):
+    def validateMove(move, lastMoveSign):
+        """
+        Validates a move
+        :param move: The move to be validated
+        :param lastMoveSign: The sign of the last move
+        :raises MoveInvalid: If the move is invalid
+        """
         Validator.validateCoordinates(move.x, move.y)
-        if lastMoveSign == sign:
+        if lastMoveSign == move.sign:
             raise MoveInvalid
 
     @staticmethod
     def validateCoordinates(x, y):
-        if not Validator.between(x, 0, MoveRepository.dimX - 1):
+        """
+        Validates the coordinates of a move
+        :param x: The x coordinate
+        :param y: The y coordinate
+        :raises MoveInvalid: If the move is invalid
+        """
+        if not 0 <= x < MoveRepository.dimX:
             raise MoveInvalid
-        if not Validator.between(y, 0, MoveRepository.dimY - 1):
+        if not 0 <= y < MoveRepository.dimY:
             raise MoveInvalid
-
-    @staticmethod
-    def between(a, b, c):
-        return b <= a <= c

@@ -3,6 +3,9 @@ class DuplicateMoveError(RuntimeError):
 
 
 class MoveRepository:
+    """
+    Represents a collection of moves on the board
+    """
     dimX = 15
     dimY = 15
     winNumber = 5
@@ -17,6 +20,11 @@ class MoveRepository:
         self.__moveNumber = 0
 
     def addMove(self, move):
+        """
+        Adds a move to the board
+        :param move: The move to be added to the board
+        :raises DuplicateMoveError: If the move has already been made on the board
+        """
         if self.moves[move.y][move.x] is not None:
             raise DuplicateMoveError
         self.moves[move.y][move.x] = move
@@ -24,6 +32,12 @@ class MoveRepository:
         self.__moveNumber += 1
 
     def getMove(self, x, y):
+        """
+        Gets a specific move by its coordinates
+        :param x: The x coordinate
+        :param y: The y coordinate
+        :return: The move that was made at the given coordinates
+        """
         return self.moves[y][x]
 
     @property

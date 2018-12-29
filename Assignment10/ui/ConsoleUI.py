@@ -65,6 +65,8 @@ class ConsoleUI(UI):
             newGame = False
             if choice == "y":
                 newGame = True
+                self.gameController.resetGame()
+                self.currentPlayer = self.player1
 
     def showBoard(self):
         table = PrettyTable()
