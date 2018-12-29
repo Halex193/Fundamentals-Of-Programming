@@ -6,6 +6,7 @@ class MoveInvalid(RuntimeError):
 
 
 class Validator:
+
     @staticmethod
     def validateMove(move, sign, lastMoveSign):
         Validator.validateCoordinates(move.x, move.y)
@@ -21,4 +22,4 @@ class Validator:
 
     @staticmethod
     def between(a, b, c):
-        return a >= b, a <= c
+        return b <= a <= c

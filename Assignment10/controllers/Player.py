@@ -14,5 +14,6 @@ class Player:
 
     def makeMove(self, x, y):
         move = Move(self.sign, x, y)
-        Validator.validateMove(self.__sign, move, self.__moveRepository.lastMove.sign)
+        Validator.validateMove(move, self.__sign,
+                               self.__moveRepository.lastMove.sign if self.__moveRepository.lastMove is not None else "")
         self.__moveRepository.addMove(move)

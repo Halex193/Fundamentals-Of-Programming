@@ -2,22 +2,17 @@ from repository.MoveRepository import MoveRepository
 from validation.Validator import Validator, MoveInvalid
 
 
-def isValid(x, y):
-    try:
-        Validator.validateCoordinates(x, y)
-        return True
-    except MoveInvalid:
-        return False
-
-
 class GameController:
     def __init__(self, moveRepository):
         self.__moveRepository = moveRepository
 
     def getMoves(self):
-        self.__moveRepository.getMoves()
+        return self.__moveRepository.moves
 
-    def gameWon(self):
+    def resetGame(self):
+        self.__moveRepository.__init__()
+
+    def gameStatus(self):
         lastMove = self.__moveRepository.lastMove
 
         directions = [
@@ -41,7 +36,8 @@ class GameController:
         y = lastMove.y
         x += direction[0]
         y += direction[1]
-        while isValid(x, y) and self.__moveRepository.getMove(x, y).sign == lastMove.sign:
+        while self.isValid(x, y) and self.__moveRepository.getMove(x, y) is not None\
+                and self.__moveRepository.getMove(x, y).sign == lastMove.sign:
             x += direction[0]
             y += direction[1]
             count += 1
@@ -50,3 +46,11 @@ class GameController:
     @staticmethod
     def invert(direction):
         return -direction[0], -direction[1]
+
+    @staticmethod
+    def isValid(x, y):
+        try:
+            Validator.validateCoordinates(x, y)
+            return True
+        except MoveInvalid:
+            return False
