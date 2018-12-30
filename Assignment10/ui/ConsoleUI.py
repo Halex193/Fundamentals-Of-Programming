@@ -23,29 +23,10 @@ class ConsoleUI(UI):
             while gameStatus == 0:
                 self.showBoard()
                 if type(self.currentPlayer) is Player:
-                    inputValid = False
-                    while not inputValid:
-                        coordinates = input("Choose the coordinates for your move: ")
-                        coordinates = coordinates.strip()
-                        coordinates = coordinates.split(' ')
-                        if len(coordinates) != 2:
-                            print("Input invalid!")
-                        else:
-                            try:
-                                x = int(coordinates[0])
-                                y = int(coordinates[1])
-                                self.currentPlayer.makeMove(x, y)
-                                inputValid = True
-                            except ValueError:
-                                print("Input invalid!")
-                            except MoveInvalid:
-                                print("Invalid move!")
-                            except DuplicateMoveError:
-                                print("Invalid move!")
+                    self.managePlayer()
 
                 elif type(self.currentPlayer) is AIPlayer:
-                    input("The AI player will make his move.\n Press Enter key to continue ")
-                    self.currentPlayer.makeMove()
+                    self.manageAI()
 
                 gameStatus = self.gameController.gameStatus()
 
@@ -67,6 +48,31 @@ class ConsoleUI(UI):
                 newGame = True
                 self.gameController.resetGame()
                 self.currentPlayer = self.player1
+
+    def manageAI(self):
+        input("The AI player will make his move.\n Press Enter key to continue ")
+        self.currentPlayer.makeMove()
+
+    def managePlayer(self):
+        inputValid = False
+        while not inputValid:
+            coordinates = input("Choose the coordinates for your move: ")
+            coordinates = coordinates.strip()
+            coordinates = coordinates.split(' ')
+            if len(coordinates) != 2:
+                print("Input invalid!")
+            else:
+                try:
+                    x = int(coordinates[0])
+                    y = int(coordinates[1])
+                    self.currentPlayer.makeMove(x, y)
+                    inputValid = True
+                except ValueError:
+                    print("Input invalid!")
+                except MoveInvalid:
+                    print("Invalid move!")
+                except DuplicateMoveError:
+                    print("Invalid move!")
 
     def showBoard(self):
         table = PrettyTable()

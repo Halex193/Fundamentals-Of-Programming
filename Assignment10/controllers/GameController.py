@@ -6,6 +6,7 @@ class GameController:
     """
     Provides the main game logic
     """
+
     def __init__(self, moveRepository):
         self.__moveRepository = moveRepository
 
@@ -15,6 +16,13 @@ class GameController:
         :return: A list of lists of moves
         """
         return self.__moveRepository.moves
+
+    def getLastMove(self):
+        """
+        Returns the last move made
+        :return: A Move object
+        """
+        return self.__moveRepository.lastMove
 
     def resetGame(self):
         """
@@ -40,7 +48,8 @@ class GameController:
 
         for direction in directions:
             if self.__count(lastMove, direction) + self.__count(lastMove,
-                                                                self.__invert(direction)) + 1 == MoveRepository.winNumber:
+                                                                self.__invert(
+                                                                    direction)) + 1 == MoveRepository.winNumber:
                 return 1
         if self.__moveRepository.moveNumber == MoveRepository.dimX * MoveRepository.dimY:
             return -1
@@ -58,7 +67,7 @@ class GameController:
         y = lastMove.y
         x += direction[0]
         y += direction[1]
-        while self.__isValid(x, y) and self.__moveRepository.getMove(x, y) is not None\
+        while self.__isValid(x, y) and self.__moveRepository.getMove(x, y) is not None \
                 and self.__moveRepository.getMove(x, y).sign == lastMove.sign:
             x += direction[0]
             y += direction[1]

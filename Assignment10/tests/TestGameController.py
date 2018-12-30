@@ -26,3 +26,6 @@ class TestGameController(TestCase):
         self.repo.addMove(Move("X", 3, 3))
         self.repo.addMove(Move("X", 4, 4))
         self.assertEqual(self.controller.gameStatus(), 1)
+
+    def testGetLastMove(self):
+        self.assertEqual(self.controller.getLastMove(), self.move)
