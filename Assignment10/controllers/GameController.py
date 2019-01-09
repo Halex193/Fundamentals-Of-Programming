@@ -91,3 +91,7 @@ class GameController:
             return True
         except MoveInvalid:
             return False
+
+    @property
+    def moveRepository(self):
+        return self.__moveRepository

@@ -12,6 +12,7 @@ class GUI(UI):
     def __init__(self, player1, player2, gameController):
         super().__init__(player1, player2, gameController)
         self.currentPlayer = player1
+        self.backgroundColor = '#ADD8E6'
         self.gameEnded = False
         self.window: Tk = None
         self.canvas: Canvas = None
@@ -30,7 +31,7 @@ class GUI(UI):
     def initializeWindow(self):
         self.window = Tk()
 
-        self.canvas = Canvas(self.window, width=self.width, height=self.height, background='#D3D3D3')
+        self.canvas = Canvas(self.window, width=self.width, height=self.height, background=self.backgroundColor)
         self.canvas.pack()
         self.canvas.bind("<Button-1>", self.onMouseClicked)
         self.textarea = Label(self.window, text="Player 1 begins", font=("Helvetica", 20))
@@ -58,7 +59,7 @@ class GUI(UI):
         self.canvas.delete(ALL)
         self.initializeGrid()
         self.gameController.resetGame()
-        self.canvas.config(background = '#D3D3D3')
+        self.canvas.config(background = self.backgroundColor)
 
     def onMouseClicked(self, event):
         if self.gameEnded:

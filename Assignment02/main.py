@@ -23,7 +23,7 @@ def run():
 def slice_dictionary(number_dictionary, start_index, end_index):
     '''
     Slices a dictionary
-    :param number_dictionary: THe dictionary to be sliced
+    :param number_dictionary: The dictionary to be sliced
     :param start_index: The minimi=um key value
     :param end_index: The maximum key value (exclusive)
     :return: The sliced dictionary

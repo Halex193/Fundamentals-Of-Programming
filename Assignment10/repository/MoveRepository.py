@@ -40,6 +40,13 @@ class MoveRepository:
         """
         return self.moves[y][x]
 
+    def undoMove(self, x, y, lastMove):
+        if self.moves[y][x] is None:
+            raise DuplicateMoveError
+        self.moves[y][x] = None
+        self.__moveNumber -= 1
+        self.__lastMove = lastMove
+
     @property
     def moves(self):
         return self.__moves

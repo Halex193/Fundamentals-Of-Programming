@@ -6,6 +6,7 @@ class Player:
     """
     Provides the logic interface for a player
     """
+
     def __init__(self, sign, moveRepository):
         self.__sign = sign
         self.__moveRepository = moveRepository
@@ -24,3 +25,9 @@ class Player:
         Validator.validateMove(move,
                                self.__moveRepository.lastMove.sign if self.__moveRepository.lastMove is not None else "")
         self.__moveRepository.addMove(move)
+
+    def otherSign(self):
+        """
+        Returns the other sign
+        """
+        return "X" if self.sign == "O" else "O"
