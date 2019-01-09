@@ -20,8 +20,8 @@ class GUI(UI):
         self.squareWidth = 50
         self.padding = 5
         self.lineWidth = 2
-        self.width = MoveRepository.dimX * self.squareWidth
-        self.height = MoveRepository.dimY * self.squareWidth
+        self.width = MoveRepository.dimensionX * self.squareWidth
+        self.height = MoveRepository.dimensionY * self.squareWidth
         self.initializeWindow()
         self.initializeGrid()
 
@@ -40,18 +40,18 @@ class GUI(UI):
 
     def initializeGrid(self):
         canvas = self.canvas
-        for i in range(1, MoveRepository.dimX):
+        for i in range(1, MoveRepository.dimensionX):
             canvas.create_line(i * self.squareWidth, 0, i * self.squareWidth, self.height, width=self.lineWidth)
-        for i in range(1, MoveRepository.dimY):
+        for i in range(1, MoveRepository.dimensionY):
             canvas.create_line(0, i * self.squareWidth, self.width, i * self.squareWidth, width=self.lineWidth)
 
     def drawLastMove(self):
         lastMove: Move = self.gameController.getLastMove()
         self.canvas.create_oval(
-            lastMove.x * self.squareWidth + self.padding,
-            lastMove.y * self.squareWidth + self.padding,
-            (lastMove.x + 1) * self.squareWidth - self.padding,
-            (lastMove.y + 1) * self.squareWidth - self.padding,
+            lastMove.xCoordinate * self.squareWidth + self.padding,
+            lastMove.yCoordinate * self.squareWidth + self.padding,
+            (lastMove.xCoordinate + 1) * self.squareWidth - self.padding,
+            (lastMove.yCoordinate + 1) * self.squareWidth - self.padding,
             fill='black' if lastMove.sign == 'X' else 'white',
             outline=''
         )
@@ -71,11 +71,11 @@ class GUI(UI):
             return
 
         if type(self.currentPlayer) is Player:
-            x = event.x // self.squareWidth
-            y = event.y // self.squareWidth
+            xCoordinate = event.x // self.squareWidth
+            yCoordinate = event.y // self.squareWidth
 
             try:
-                self.currentPlayer.makeMove(x, y)
+                self.currentPlayer.makeMove(xCoordinate, yCoordinate)
             except:
                 self.show("Invalid move!")
                 return

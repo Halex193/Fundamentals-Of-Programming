@@ -15,13 +15,13 @@ class Player:
     def sign(self):
         return self.__sign
 
-    def makeMove(self, x, y):
+    def makeMove(self, xCoordinate, yCoordinate):
         """
         Makes a move for the player
-        :param x: The x coordinate of the move
-        :param y: The y coordinate of the move
+        :param xCoordinate: The x coordinate of the move
+        :param yCoordinate: The y coordinate of the move
         """
-        move = Move(self.sign, x, y)
+        move = Move(self.sign, xCoordinate, yCoordinate)
         Validator.validateMove(move,
                                self.__moveRepository.lastMove.sign if self.__moveRepository.lastMove is not None else "")
         self.__moveRepository.addMove(move)

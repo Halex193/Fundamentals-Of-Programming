@@ -6,15 +6,15 @@ class MoveRepository:
     """
     Represents a collection of moves on the board
     """
-    dimX = 15
-    dimY = 15
+    dimensionX = 15
+    dimensionY = 15
     winNumber = 5
 
     def __init__(self):
         self.__moves = []
-        for i in range(MoveRepository.dimY):
+        for i in range(MoveRepository.dimensionY):
             self.moves.append([])
-            for j in range(MoveRepository.dimX):
+            for j in range(MoveRepository.dimensionX):
                 self.moves[i].append(None)
         self.__lastMove = None
         self.__moveNumber = 0
@@ -25,25 +25,25 @@ class MoveRepository:
         :param move: The move to be added to the board
         :raises DuplicateMoveError: If the move has already been made on the board
         """
-        if self.moves[move.y][move.x] is not None:
+        if self.moves[move.yCoordinate][move.xCoordinate] is not None:
             raise DuplicateMoveError
-        self.moves[move.y][move.x] = move
+        self.moves[move.yCoordinate][move.xCoordinate] = move
         self.__lastMove = move
         self.__moveNumber += 1
 
-    def getMove(self, x, y):
+    def getMove(self, xCoordinate, yCoordinate):
         """
         Gets a specific move by its coordinates
-        :param x: The x coordinate
-        :param y: The y coordinate
+        :param xCoordinate: The x coordinate
+        :param yCoordinate: The y coordinate
         :return: The move that was made at the given coordinates
         """
-        return self.moves[y][x]
+        return self.moves[yCoordinate][xCoordinate]
 
-    def undoMove(self, x, y, lastMove):
-        if self.moves[y][x] is None:
+    def undoMove(self, xCoordinate, yCoordinate, lastMove):
+        if self.moves[yCoordinate][xCoordinate] is None:
             raise DuplicateMoveError
-        self.moves[y][x] = None
+        self.moves[yCoordinate][xCoordinate] = None
         self.__moveNumber -= 1
         self.__lastMove = lastMove
 

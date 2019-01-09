@@ -42,9 +42,9 @@ class ConsoleUI(UI):
                     print("Player 2 has won!")
                 else:
                     print("Player 1 has won!")
-            choice = input("Would you like to start another game? y/n\n")
+            choice = input("Would you like to start another game? yes/no\n")
             newGame = False
-            if choice == "y":
+            if choice == "yes":
                 newGame = True
                 self.gameController.resetGame()
                 self.currentPlayer = self.player1
@@ -63,9 +63,9 @@ class ConsoleUI(UI):
                 print("Input invalid!")
             else:
                 try:
-                    x = int(coordinates[0])
-                    y = int(coordinates[1])
-                    self.currentPlayer.makeMove(x, y)
+                    xCoordinate = int(coordinates[0])
+                    yCoordinate = int(coordinates[1])
+                    self.currentPlayer.makeMove(xCoordinate, yCoordinate)
                     inputValid = True
                 except ValueError:
                     print("Input invalid!")
@@ -77,17 +77,17 @@ class ConsoleUI(UI):
     def showBoard(self):
         table = PrettyTable()
         fieldNames = [" "]
-        for i in range(MoveRepository.dimX):
+        for i in range(MoveRepository.dimensionX):
             fieldNames.append(str(i))
         table.field_names = fieldNames
         moves = self.gameController.getMoves()
-        for i in range(MoveRepository.dimY):
+        for i in range(MoveRepository.dimensionY):
             newRow = [str(i)]
             for move in moves[i]:
                 newRow.append(move.sign if move is not None else " ")
             table.add_row(newRow)
-            if i != MoveRepository.dimY - 1:
-                table.add_row(["--"] * (MoveRepository.dimX + 1))
+            if i != MoveRepository.dimensionY - 1:
+                table.add_row(["--"] * (MoveRepository.dimensionX + 1))
         table = table.get_string()
         os.system("cls")
         print(table)

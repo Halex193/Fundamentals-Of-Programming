@@ -6,7 +6,7 @@ from repository.MoveRepository import MoveRepository
 
 class TestPlayer(TestCase):
     def testMakeMove(self):
-        repo = MoveRepository()
-        player = Player("X", repo)
+        repository = MoveRepository()
+        player = Player("X", repository)
         player.makeMove(0, 0)
-        self.assertEqual(repo.getMove(0, 0).sign, "X")
+        self.assertEqual(repository.getMove(0, 0).sign, "X")

@@ -7,10 +7,10 @@ from repository.MoveRepository import MoveRepository
 
 class TestGameController(TestCase):
     def setUp(self):
-        self.repo = MoveRepository()
+        self.repository = MoveRepository()
         self.move = Move("X", 0, 0)
-        self.repo.addMove(self.move)
-        self.controller = GameController(self.repo)
+        self.repository.addMove(self.move)
+        self.controller = GameController(self.repository)
 
     def testGetMoves(self):
         self.assertEqual(self.controller.getMoves()[0][0], self.move)
@@ -21,10 +21,10 @@ class TestGameController(TestCase):
 
     def testGameStatus(self):
         self.assertEqual(self.controller.gameStatus(), 0)
-        self.repo.addMove(Move("X", 1, 1))
-        self.repo.addMove(Move("X", 2, 2))
-        self.repo.addMove(Move("X", 3, 3))
-        self.repo.addMove(Move("X", 4, 4))
+        self.repository.addMove(Move("X", 1, 1))
+        self.repository.addMove(Move("X", 2, 2))
+        self.repository.addMove(Move("X", 3, 3))
+        self.repository.addMove(Move("X", 4, 4))
         self.assertEqual(self.controller.gameStatus(), 1)
 
     def testGetLastMove(self):

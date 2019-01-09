@@ -18,19 +18,19 @@ class Validator:
         :param lastMoveSign: The sign of the last move
         :raises MoveInvalid: If the move is invalid
         """
-        Validator.validateCoordinates(move.x, move.y)
+        Validator.validateCoordinates(move.xCoordinate, move.yCoordinate)
         if lastMoveSign == move.sign:
             raise MoveInvalid
 
     @staticmethod
-    def validateCoordinates(x, y):
+    def validateCoordinates(xCoordinate, yCoordinate):
         """
         Validates the coordinates of a move
-        :param x: The x coordinate
-        :param y: The y coordinate
+        :param xCoordinate: The x coordinate
+        :param yCoordinate: The y coordinate
         :raises MoveInvalid: If the move is invalid
         """
-        if not 0 <= x < MoveRepository.dimX:
+        if not 0 <= xCoordinate < MoveRepository.dimensionX:
             raise MoveInvalid
-        if not 0 <= y < MoveRepository.dimY:
+        if not 0 <= yCoordinate < MoveRepository.dimensionY:
             raise MoveInvalid

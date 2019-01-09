@@ -15,8 +15,8 @@ class AIPlayer:
         """
         possibleMoves = []
         moves = self.gameController.getMoves()
-        for i in range(MoveRepository.dimY):
-            for j in range(MoveRepository.dimX):
+        for i in range(MoveRepository.dimensionY):
+            for j in range(MoveRepository.dimensionX):
                 if moves[i][j] is None:
                     possibleMoves.append((j, i))
 
@@ -64,7 +64,7 @@ class AIPlayer:
             return
         random.shuffle(possibleMoves)
         for move in possibleMoves:
-            if abs(lastMove.x - move[0]) <= 1 and abs(lastMove.y - move[1]) <= 1:
+            if abs(lastMove.xCoordinate - move[0]) <= 1 and abs(lastMove.yCoordinate - move[1]) <= 1:
                 return move
 
     def randomMove(self, possibleMoves):

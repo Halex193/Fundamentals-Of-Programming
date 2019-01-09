@@ -51,7 +51,7 @@ class GameController:
                                                                 self.__invert(
                                                                     direction)) + 1 == MoveRepository.winNumber:
                 return 1
-        if self.__moveRepository.moveNumber == MoveRepository.dimX * MoveRepository.dimY:
+        if self.__moveRepository.moveNumber == MoveRepository.dimensionX * MoveRepository.dimensionY:
             return -1
         return 0
 
@@ -63,14 +63,14 @@ class GameController:
         :return: The number of similar signs in the given direction
         """
         count = 0
-        x = lastMove.x
-        y = lastMove.y
-        x += direction[0]
-        y += direction[1]
-        while self.__isValid(x, y) and self.__moveRepository.getMove(x, y) is not None \
-                and self.__moveRepository.getMove(x, y).sign == lastMove.sign:
-            x += direction[0]
-            y += direction[1]
+        xCoordinate = lastMove.xCoordinate
+        yCoordinate = lastMove.yCoordinate
+        xCoordinate += direction[0]
+        yCoordinate += direction[1]
+        while self.__isValid(xCoordinate, yCoordinate) and self.__moveRepository.getMove(xCoordinate, yCoordinate) is not None \
+                and self.__moveRepository.getMove(xCoordinate, yCoordinate).sign == lastMove.sign:
+            xCoordinate += direction[0]
+            yCoordinate += direction[1]
             count += 1
         return count
 
@@ -82,12 +82,12 @@ class GameController:
         return -direction[0], -direction[1]
 
     @staticmethod
-    def __isValid(x, y):
+    def __isValid(xCoordinate, yCoordinate):
         """
         Checks if the given coordinates are valid
         """
         try:
-            Validator.validateCoordinates(x, y)
+            Validator.validateCoordinates(xCoordinate, yCoordinate)
             return True
         except MoveInvalid:
             return False
