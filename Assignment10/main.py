@@ -1,3 +1,4 @@
+# Udrea Horațiu 917
 from controllers.AIPlayer import AIPlayer
 from utils.Settings import Settings
 from controllers.GameController import GameController

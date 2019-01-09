@@ -30,6 +30,7 @@ class GUI(UI):
 
     def initializeWindow(self):
         self.window = Tk()
+        self.window.title("Gomoku")
 
         self.canvas = Canvas(self.window, width=self.width, height=self.height, background=self.backgroundColor)
         self.canvas.pack()
@@ -59,7 +60,7 @@ class GUI(UI):
         self.canvas.delete(ALL)
         self.initializeGrid()
         self.gameController.resetGame()
-        self.canvas.config(background = self.backgroundColor)
+        self.canvas.config(background=self.backgroundColor)
 
     def onMouseClicked(self, event):
         if self.gameEnded:
@@ -101,9 +102,9 @@ class GUI(UI):
                 self.show("Press anywhere for the AI to make his move")
         else:
             againText = " Press anywhere to play again!"
-            self.canvas.config(background = 'purple')
+            self.canvas.config(background='purple')
             if gameStatus == -1:
-                print("The game has ended in a tie!" + againText)
+                self.show("The game has ended in a tie!" + againText)
             elif gameStatus == 1:
                 if id(self.currentPlayer) == id(self.player1):
                     self.show(text="Player 2 has won!" + againText)

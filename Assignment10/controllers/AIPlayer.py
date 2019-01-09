@@ -71,4 +71,4 @@ class AIPlayer:
         """
         Picks a random move from the possible ones
         """
-        return possibleMoves[random.randint(0, len(possibleMoves))]
+        return possibleMoves[random.randint(0, len(possibleMoves) - 1)]
